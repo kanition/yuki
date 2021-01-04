@@ -1,6 +1,10 @@
 #include "get_resp.h"
 #include "nlohmann/json.hpp"
 #include "img_group.h"
+#include "yuki.h"
+#ifdef WIN_OK_H
+#include <errno.h>
+#endif
 
 static size_t write_descr(void *ptr, size_t size, size_t nmemb, void *stream)
 {
@@ -23,8 +27,13 @@ int download_img(const std::string &url, const std::string &save_path, const cur
         // curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_descr);
         FILE *pagefile = nullptr;
+#ifdef WIN_OK_H
+        errno_t err = fopen_s(&pagefile, save_path.c_str(), "wb");
+        if (err == 0)
+#else
         pagefile = fopen(save_path.c_str(), "wb");
         if (pagefile)
+#endif
         {
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, pagefile);
             curl_easy_perform(curl);

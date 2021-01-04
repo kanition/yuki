@@ -26,7 +26,7 @@ public:
     BiliAlbumParser(const std::string &);
     BiliAlbumParser(const BiliAlbumParser &);
     void set_time();
-    int parse(const std::string &);
+    void parse(const std::string &);
 
     std::string get_user_id() const;
     int get_page_num() const;

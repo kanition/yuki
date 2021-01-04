@@ -16,6 +16,8 @@
 #define OS_SEP ('\\')
 #endif
 
+// 数字字符串左边补零直到指定位数n
+// 例如s="35", n=4, 返回"0035"
 std::string add_zero(const std::string &s, std::string::size_type n)
 {
     std::string t(n, '0');
@@ -23,6 +25,8 @@ std::string add_zero(const std::string &s, std::string::size_type n)
     return t.substr(t.length() - n);
 }
 
+// 检查文件或文件夹是否存在
+// 存在返回0，否则返回非0值
 int check_dir(const std::string &p)
 {
 #ifdef LINUX_OK_H
@@ -34,6 +38,7 @@ int check_dir(const std::string &p)
     return -1;
 }
 
+// 新建文件夹，成功返回0，否则返回非0
 int make_direct(const std::string &p)
 {
 #ifdef LINUX_OK_H
@@ -44,6 +49,9 @@ int make_direct(const std::string &p)
 #endif
     return -1;
 }
+
+// 移去字符串首尾两端任意多个正反斜杠用于规范化路径
+// 例如str="//aaa\\b/cc/ddd//\\"，返回"aaa\\b/cc/ddd"
 std::string remove_chars(const std::string &str)
 {
     std::string p(str);
@@ -51,34 +59,35 @@ std::string remove_chars(const std::string &str)
     {
         return p;
     }
-    while (p.find_first_of("/\\") == 0)
+    while (p.find_first_of("/\\") == 0) //开头存在斜杠
     {
-        p = p.substr(1);
+        p = p.substr(1); //移去一个斜杠
     }
     if (p.empty())
     {
         return p;
     }
-    while (p.find_last_of("/\\") + 1 == p.size())
+    while (p.find_last_of("/\\") + 1 == p.size()) //末尾存在斜杠
     {
-        p = p.substr(0, p.size() - 1);
+        p = p.substr(0, p.size() - 1); //移去一个斜杠
     }
     return p;
 }
 
+// 用正斜杠或反斜杠连接路径
 std::string join_path(std::initializer_list<std::string> path)
 {
     std::vector<std::string> a;
     for (const auto &s : path)
     {
-        a.push_back(remove_chars(s));
+        a.push_back(remove_chars(s)); //消除首尾斜杠
     }
     std::string new_path;
     if ((*(path.begin())).find_first_of("/\\") == 0)
     {
-        new_path += OS_SEP;
+        new_path += OS_SEP; //补回第一段路径开头的斜杠
     }
-    bool check = false;
+    bool check = false; //需要添加斜杠
     for (const auto &p : a)
     {
         if (!p.empty())
@@ -94,6 +103,7 @@ std::string join_path(std::initializer_list<std::string> path)
     return new_path;
 }
 
+// 不定参数量模板重载使之也适合C字符串
 template <typename... Ts>
 std::string join_path(Ts &&... paths)
 {
@@ -104,11 +114,13 @@ std::string join_path(Ts &&... paths)
     return join_path({paths...});
 }
 
+// 返回最后一段路径
 std::string basename(const std::string &p)
 {
     return p.substr(p.find_last_of("/\\") + 1);
 }
 
+// 检查ID均为数字，符合为true
 bool check_str_id(const std::string &s)
 {
     for (auto &c : s)
@@ -263,17 +275,17 @@ void BiliAlbumParser::parse_doc_id(const std::string &save_path)
                 i = page_num;
                 break;
             }
-            std::string doc_path = save_path + OS_SEP + d;
+            std::string doc_path = join_path(save_path, d);
             if ((check_dir(doc_path) && make_direct(doc_path)) ||
-                (write_comment(doc_path + OS_SEP + "description.txt", g.upload_time, g.description)))
+                (write_comment(join_path(doc_path, "description.txt"), g.upload_time, g.description)))
             {
                 fail_doc.push_back(d);
                 continue;
             }
             for (auto &u : g.imgs)
             {
-                std::string m = doc_path + OS_SEP + basename(u);
-                if (download_img(u, m, img_chunk))
+                std::string m = join_path(doc_path, basename(u));
+                if (check_dir(m) && download_img(u, m, img_chunk))
                 {
                     fail_doc.push_back(d);
                     break;
@@ -285,7 +297,7 @@ void BiliAlbumParser::parse_doc_id(const std::string &save_path)
     }
     curl_slist_free_all(chunk);
     curl_slist_free_all(img_chunk);
-    std::cout << std::endl;
+    std::cout << "\033[K" << std::endl;
     if (fail_doc.size())
     {
         std::cout << "Fail doc id list:" << std::endl;
@@ -325,17 +337,13 @@ img_group BiliAlbumParser::parse_img_group(const struct curl_slist *chunk, const
     return g;
 }
 
-int BiliAlbumParser::parse(const std::string &save_path)
+void BiliAlbumParser::parse(const std::string &save_path)
 {
-    std::string user_path = remove_chars(save_path);
-    if (save_path.find_first_of("/\\") == 0)
-    {
-        user_path = OS_SEP + user_path;
-    }
-    user_path += OS_SEP + user_id;
+    std::string user_path = join_path(save_path, user_id);
     if (check_dir(user_path) && make_direct(user_path))
     {
         std::cerr << "Bad save path: " << save_path << std::endl;
+        return;
     }
     else
     {
@@ -344,7 +352,6 @@ int BiliAlbumParser::parse(const std::string &save_path)
         parse_page_num();
         parse_doc_id(user_path);
     }
-    return 0;
 }
 
 std::ostream &operator<<(std::ostream &os, const BiliAlbumParser &b)

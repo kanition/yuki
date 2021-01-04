@@ -5,6 +5,5 @@
 
 #cmakedefine LINUX_OK_H
 #cmakedefine WIN_OK_H
-
-#define DEBUG
+// #define DEBUG
 #endif
