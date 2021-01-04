@@ -69,11 +69,11 @@ int main(int argc, char const *argv[])
     std::cout << YUKI_VERSION_MAJOR << "." << YUKI_VERSION_MINOR << std::endl;
 #endif
     std::string user_id;
-    std::cout << "输入用户ID:" << std::endl;
+    std::cout << "Input User ID:" << std::endl;
     std::cin >> user_id;
     curl_global_init(CURL_GLOBAL_DEFAULT);
     BiliAlbumParser bl(user_id);
-    std::cout << "是否设置搜索时间段? y/[n]" << std::endl;
+    std::cout << "Set Search Period? y/[n]" << std::endl;
     char c = 'y';
     c = std::cin.get();
     c = std::cin.get();
@@ -82,7 +82,7 @@ int main(int argc, char const *argv[])
         bl.set_time();
     }
     std::string save_path;
-    std::cout << "输入保存路径: " << std::endl;
+    std::cout << "Input Save path: " << std::endl;
     std::cin >> save_path;
     bl.parse(save_path);
     curl_global_cleanup();
