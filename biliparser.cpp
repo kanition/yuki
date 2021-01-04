@@ -29,7 +29,7 @@ int check_dir(const std::string &p)
     return access(p.c_str(), F_OK);
 #endif
 #ifdef WIN_OK_H
-    return access(p.c_str(), 0);
+    return _access(p.c_str(), 0);
 #endif
     return -1;
 }
@@ -40,7 +40,7 @@ int make_direct(const std::string &p)
     return mkdir(p.c_str(), 0700);
 #endif
 #ifdef WIN_OK_H
-    return mkdir(p.c_str());
+    return _mkdir(p.c_str());
 #endif
     return -1;
 }

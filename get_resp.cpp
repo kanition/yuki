@@ -2,7 +2,7 @@
 #include "nlohmann/json.hpp"
 #include "img_group.h"
 
-static size_t WriteFile(void *ptr, size_t size, size_t nmemb, void *stream)
+static size_t write_descr(void *ptr, size_t size, size_t nmemb, void *stream)
 {
     size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
     return written;
@@ -21,7 +21,7 @@ int download_img(const std::string &url, const std::string &save_path, const cur
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 #endif
         // curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteFile);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_descr);
         FILE *pagefile = nullptr;
         pagefile = fopen(save_path.c_str(), "wb");
         if (pagefile)
