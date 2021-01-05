@@ -1,4 +1,4 @@
-#ifndef YUKI_UTIL
+﻿#ifndef YUKI_UTIL
 #define YUKI_UTIL
 #include <iostream>
 #cmakedefine LINUX_OK_H

@@ -1,6 +1,5 @@
-#include "util.h"
+﻿#include "util.h"
 #include <limits>
-#include <ios>
 
 #ifdef LINUX_OK_H
 #include <unistd.h>
@@ -62,7 +61,7 @@ int set_color_cmd(DWORD &dwOriginalOutMode, DWORD &dwOriginalInMode, bool reset)
 void clean_cin()
 {
     std::cin.clear();
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
 }
 
 // 数字字符串左边补零直到指定位数n

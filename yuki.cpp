@@ -18,12 +18,20 @@ int main(int argc, char const *argv[])
         std::cout << "Warning: failed in setting virtual terminal" << std::endl;
     }
 #endif
-    std::cout << "Hello Yuki!" << std::endl;
+    std::cout << "\n\
+██╗   ██╗ ██╗   ██╗ ██╗  ██╗ ██╗\n\
+╚██╗ ██╔╝ ██║   ██║ ██║ ██╔╝ ██║\n\
+ ╚████╔╝  ██║   ██║ █████╔╝  ██║\n\
+  ╚██╔╝   ██║   ██║ ██╔═██╗  ██║\n\
+   ██║    ╚██████╔╝ ██║  ██╗ ██║\n\
+   ╚═╝     ╚═════╝  ╚═╝  ╚═╝ ╚═╝"
+              << std::endl;
 #ifdef YUKI_VERSION_MAJOR
-    std::cout << "版本: " << YUKI_VERSION_MAJOR << "." << YUKI_VERSION_MINOR << std::endl;
+    std::cout
+        << "版本: " << YUKI_VERSION_MAJOR << "." << YUKI_VERSION_MINOR << std::endl;
 #endif
     std::string user_id;
-    std::cout << "(*^▽^*) 你要看哪个Up的相册呢? 输入Ta的用户ID:" << std::endl;
+    std::cout << "\n(*^▽^*) 你要看哪个Up的相册呢? 输入Ta的用户ID:" << std::endl;
     std::cin >> user_id;
     clean_cin();
     BiliAlbumParser bl(user_id);
