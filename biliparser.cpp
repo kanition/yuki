@@ -284,7 +284,7 @@ void BiliAlbumParser::parse(const std::string &save_path)
         {
             std::cout << "(<ゝω·)☆ 接受你的挑战\n"
                       << "保存路径: " << save_path << std::endl
-                      << *this << "\n(>ω·* )ﾉ 准备起飞? [y]/n" << std::endl;
+                      << *this << "\n(>ω·* )/ 准备起飞? [y]/n" << std::endl;
             char c = std::cin.get();
             clean_cin();
             if (c == 'n' || c == 'N')
