@@ -1,4 +1,4 @@
-#ifndef IMG_GROUP
+﻿#ifndef IMG_GROUP
 #define IMG_GROUP
 #include <string>
 #include <vector>

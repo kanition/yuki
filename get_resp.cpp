@@ -1,4 +1,4 @@
-#include "get_resp.h"
+﻿#include "get_resp.h"
 #include "nlohmann/json.hpp"
 #include "img_group.h"
 #include "yuki.h"
@@ -39,7 +39,8 @@ int download_img(const std::string &url, const std::string &save_path, const cur
     }
     else
     {
-        std::cerr << "Initial fail: curl_easy_init() in download_img()" << std::endl;
+        std::cerr << "Error: download_img-curl_easy_init"
+                  << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
     }
     return status;
 }
@@ -73,7 +74,8 @@ static size_t write_memory_callback(void *contents, size_t size, size_t nmemb, M
     char *ptr = static_cast<char *>(realloc(mem->memory, mem->size + realsize + 1));
     if (ptr == nullptr)
     {
-        std::cerr << "No enough memory (realloc returned NULL)" << std::endl;
+        std::cerr << "Error: write_memory_callback: No enough memory"
+                  << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
         return 0; //返回处理量与待处理量不统一可引发报错
     }
     mem->memory = ptr;
@@ -102,7 +104,12 @@ CURLcode perform_get(CURL *curl, const curl_slist *chunk, MemoryStruct &mem, con
 int get_all_count(const char *s)
 {
     nlohmann::json j = nlohmann::json::parse(s);
-    return j["data"]["all_count"].get<int>();
+    int code = j["code"].get<int>();
+    if (!code)
+    {
+        return j["data"]["all_count"].get<int>();
+    }
+    return -1;
 }
 
 // 解析json格式字符串并获取动态说明和图片地址
@@ -110,12 +117,17 @@ img_group get_img_group(const char *s, const std::string &one_doc_id)
 {
     img_group g;
     g.doc_id = one_doc_id; //动态ID
-    nlohmann::json j = nlohmann::json::parse(s)["data"]["item"];
-    g.description = j["description"].get<std::string>(); //说明
-    g.upload_time = j["upload_time"].get<std::string>(); //上传时间YYYY-MM-DD HH:mm:ss
-    for (nlohmann::json &item : j["pictures"])
-    { //图片链接地址
-        g.imgs.push_back(item["img_src"].get<std::string>());
+    nlohmann::json j = nlohmann::json::parse(s);
+    int code = j["code"].get<int>();
+    if (!code)
+    {
+        j = j["data"]["item"];
+        g.description = j["description"].get<std::string>(); //说明
+        g.upload_time = j["upload_time"].get<std::string>(); //上传时间YYYY-MM-DD HH:mm:ss
+        for (nlohmann::json &item : j["pictures"])
+        { //图片链接地址
+            g.imgs.push_back(item["img_src"].get<std::string>());
+        }
     }
     return g;
 }
@@ -125,9 +137,13 @@ std::vector<std::string> doc_list(const char *s)
 {
     nlohmann::json j = nlohmann::json::parse(s);
     std::vector<std::string> doc_list;
-    for (nlohmann::json &item : j["data"]["items"])
-    { //动态编号数字很大，使用长数据位防止溢出
-        doc_list.push_back(std::to_string(item["doc_id"].get<unsigned long long>()));
+    int code = j["code"].get<int>();
+    if (!code)
+    {
+        for (nlohmann::json &item : j["data"]["items"])
+        { //动态编号数字很大，使用长数据位防止溢出
+            doc_list.push_back(std::to_string(item["doc_id"].get<unsigned long long>()));
+        }
     }
     return doc_list;
 }
@@ -143,5 +159,7 @@ int write_comment(const std::string &txt_name, const std::string &upload_time, c
         file.close();
         return 0;
     }
+    std::cerr << "Error: write_comment: Failed in opening File: " << txt_name
+              << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
     return 1;
 }

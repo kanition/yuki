@@ -1,4 +1,4 @@
-#ifndef BILIALBUM
+﻿#ifndef BILIALBUM
 #define BILIALBUM
 #include <iostream>
 #include <vector>
@@ -15,7 +15,7 @@ private:
     int page_num;
     std::string from_time;
     std::string to_time;
-    void parse_page_num();
+    int parse_page_num();
     std::vector<std::string> parse_page_doc_id(const struct curl_slist *, const std::string &);
     void parse_doc_id(const std::string &);
     img_group parse_img_group(const struct curl_slist *, const std::string &);

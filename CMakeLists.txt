@@ -29,7 +29,8 @@ elseif(WIN32)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../json/single_include") # 实际上只有nlohmann/json.hpp
 endif()
 
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/yuki.h.in yuki.h) # 配置版本号
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/yuki.h.in yuki.h) # 配置版本号和系统等
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/util.h.in util.h) # 配置版本号和系统等
 aux_source_directory("./" src_files) # 加入本项目源码
 add_executable(yuki ${src_files})
 target_include_directories(yuki PUBLIC "${PROJECT_BINARY_DIR}") # 给出yuki.h.in生成的yuki.h的目录
