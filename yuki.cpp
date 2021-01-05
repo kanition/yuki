@@ -46,7 +46,7 @@ int main(int argc, char const *argv[])
             bl.set_time();
         }
         std::string save_path;
-        std::cout << "٩(๑>◡<๑)۶ 最后一步啦! 输入保存路径: " << std::endl;
+        std::cout << "(^o^)/ 最后一步啦! 输入保存路径: " << std::endl;
         std::cin >> save_path;
         clean_cin();
         curl_global_init(CURL_GLOBAL_DEFAULT); //全局初始化

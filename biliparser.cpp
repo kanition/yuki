@@ -21,7 +21,7 @@ BiliAlbumParser::BiliAlbumParser(const std::string &s) : page_num(0), from_time(
     }
     else
     {
-        std::cerr << "(｡•́︿•̀｡) 查无此人, 一定是你搞错啦: " << s << std::endl;
+        std::cerr << "(Ｔ▽Ｔ) 查无此人, 一定是你搞错啦: " << s << std::endl;
     }
 }
 
@@ -217,7 +217,7 @@ void BiliAlbumParser::parse_doc_id(const std::string &save_path)
     std::cout << "\033[K" << std::endl;
     if (fail_doc.size())
     { //输出失败列表
-        std::cerr << "(´･ω･)ﾉ(._.`) 这几个动态ID失败了:" << std::endl;
+        std::cerr << "(T^T) 这几个动态ID失败了:" << std::endl;
         for (auto &d : fail_doc)
         {
             std::cout << d << std::endl;
@@ -225,11 +225,11 @@ void BiliAlbumParser::parse_doc_id(const std::string &save_path)
     }
     if (remain_doc)
     {
-        std::cerr << "(´･ω･)ﾉ(._.`) 未完成全部页面解析" << std::endl;
+        std::cerr << "(T^T) 未完成全部页面解析" << std::endl;
     }
     if (n > 0)
     {
-        std::cout << "(づ◡ど) 一共搞到" << n << "张好康的" << std::endl;
+        std::cout << "(*･ω< ) 一共搞到" << n << "张好康的" << std::endl;
     }
 }
 
@@ -282,14 +282,14 @@ void BiliAlbumParser::parse(const std::string &save_path)
     {
         if (!parse_page_num())
         {
-            std::cout << "(<ゝω・)☆ 接受你的挑战\n"
+            std::cout << "(<ゝω·)☆ 接受你的挑战\n"
                       << "保存路径: " << save_path << std::endl
-                      << *this << "\n(๑╹◡╹)ﾉ 准备起飞? [y]/n" << std::endl;
+                      << *this << "\n(ﾉ≧∀≦)ﾉ 准备起飞? [y]/n" << std::endl;
             char c = std::cin.get();
             clean_cin();
             if (c == 'n' || c == 'N')
             {
-                std::cout << "ヾ(^∀^)ﾉ 收工啦" << std::endl;
+                std::cout << "(⁎˃ᴗ˂⁎) 收工啦" << std::endl;
                 return;
             }
             parse_doc_id(user_path);
