@@ -6,10 +6,12 @@
 #include <fstream>
 #include "curl/curl.h"
 #include "img_group.h"
+
+//保存到内存所用结构体
 struct MemoryStruct
 {
-    char *memory;
-    size_t size;
+    char *memory; //内容，尾零结束
+    size_t size;  //数据字节量，不含尾零
 };
 
 int download_img(const std::string &, const std::string &, const curl_slist *);

@@ -77,19 +77,15 @@ std::string remove_chars(const std::string &str)
 // 用正斜杠或反斜杠连接路径
 std::string join_path(std::initializer_list<std::string> path)
 {
-    std::vector<std::string> a;
-    for (const auto &s : path)
-    {
-        a.push_back(remove_chars(s)); //消除首尾斜杠
-    }
     std::string new_path;
     if ((*(path.begin())).find_first_of("/\\") == 0)
     {
         new_path += OS_SEP; //补回第一段路径开头的斜杠
     }
     bool check = false; //需要添加斜杠
-    for (const auto &p : a)
+    for (const auto &s : path)
     {
+        const auto p = remove_chars(s); //消除首尾斜杠
         if (!p.empty())
         {
             if (check)
@@ -123,7 +119,7 @@ std::string basename(const std::string &p)
 // 检查ID均为数字，符合为true
 bool check_str_id(const std::string &s)
 {
-    for (auto &c : s)
+    for (const auto &c : s)
     {
         if (c < '0' || c > '9')
         {
@@ -144,7 +140,7 @@ BiliAlbumParser::BiliAlbumParser(const std::string &s) : page_num(0), from_time(
     }
     else
     {
-        std::cerr << "Bad user id: " << s << std::endl;
+        std::cerr << "Illegal user id: " << s << std::endl;
     }
 }
 
@@ -153,6 +149,7 @@ std::string BiliAlbumParser::get_user_id() const
     return user_id;
 }
 
+// 获取页面数量
 void BiliAlbumParser::parse_page_num()
 {
     CURL *curl = nullptr;
@@ -165,11 +162,12 @@ void BiliAlbumParser::parse_page_num()
         CURLcode res = perform_get(curl, chunk, mem, url);
         if (res == CURLE_OK)
         {
-            page_num = get_all_count(mem.memory);
+            page_num = get_all_count(mem.memory); //解析页面数量
         }
         else
         {
-            std::cerr << "perform_get() failed in BiliAlbumParser::parse_page_num(): " << curl_easy_strerror(res) << std::endl;
+            std::cerr << "Error: parse_page_num-perform_get:\n"
+                      << curl_easy_strerror(res) << std::endl;
         }
         free(mem.memory);
         curl_slist_free_all(chunk);
@@ -177,55 +175,59 @@ void BiliAlbumParser::parse_page_num()
     }
     else
     {
-        std::cerr << "Initial fail: curl_easy_init() in BiliAlbumParser::parse_page_num()" << std::endl;
+        std::cerr << "Error: parse_page_num-curl_easy_init" << std::endl;
     }
 }
+
 int BiliAlbumParser::get_page_num() const
 {
     return page_num;
 }
 
+// 时间格式归一化YYYY-MM-DD
 std::string format_time(unsigned year, unsigned month, unsigned day)
 {
     std::string a_time;
     if (year > 9999)
     {
-        std::cerr << "Too big year num: " << year << std::endl;
+        std::cerr << "Illegal year num: " << year << std::endl;
         year = 9999;
     }
     a_time += add_zero(std::to_string(year), 4) + "-";
     if (month > 12)
     {
-        std::cerr << "Too big month num: " << month << std::endl;
+        std::cerr << "Illegal month num: " << month << std::endl;
         month = 12;
     }
     a_time += add_zero(std::to_string(month), 2) + "-";
     if (day > 31)
     {
-        std::cerr << "Too big day num: " << day << std::endl;
+        std::cerr << "Illegal day num: " << day << std::endl;
         day = 31;
     }
     a_time += add_zero(std::to_string(day), 2);
     return a_time;
 }
 
+// 设置起止时间
 void BiliAlbumParser::set_time()
 {
     unsigned year, month, day;
-    std::cout << "Input from time (eg. 2000 09 13): " << std::endl;
+    std::cout << "Input time from (eg. 2000 09 13): " << std::endl;
     std::cin >> year >> month >> day;
     from_time = format_time(year, month, day);
-    std::cout << "Input to time (eg. 2019 07 18): " << std::endl;
+    std::cout << "Input time to (eg. 2019 07 18): " << std::endl;
     std::cin >> year >> month >> day;
     to_time = format_time(year, month, day);
     if (from_time > to_time)
-    {
+    { //开始早于结束
         std::string t(from_time);
         from_time = to_time;
         to_time = t;
     }
 }
 
+// 获取一个页面上的多个动态id
 std::vector<std::string> BiliAlbumParser::parse_page_doc_id(const struct curl_slist *chunk, const std::string &url)
 {
     CURL *curl = nullptr;
@@ -241,49 +243,51 @@ std::vector<std::string> BiliAlbumParser::parse_page_doc_id(const struct curl_sl
         }
         else
         {
-            std::cerr << "perform_get() failed in BiliAlbumParser::parse_page_doc_id(): " << curl_easy_strerror(res) << std::endl;
+            std::cerr << "Error: parse_page_doc_id-perform_get:\n"
+                      << curl_easy_strerror(res) << std::endl;
         }
         free(mem.memory);
         curl_easy_cleanup(curl);
     }
     else
     {
-        std::cerr << "Initial fail: curl_easy_init() in BiliAlbumParser::parse_page_doc_id()" << std::endl;
+        std::cerr << "Error: parse_page_doc_id-curl_easy_init" << std::endl;
     }
     return page_doc;
 }
 
+// 保存图片和说明
 void BiliAlbumParser::parse_doc_id(const std::string &save_path)
 {
     struct curl_slist *chunk = base_chunk("https://space.bilibili.com", "https://space.bilibili.com/");
     struct curl_slist *img_chunk = base_chunk("https://h.bilibili.com", "https://h.bilibili.com/");
     std::string url = "https://api.vc.bilibili.com/link_draw/v1/doc/doc_list?uid=" + user_id + "&page_size=30&biz=all&page_num=";
     std::vector<std::string> fail_doc;
-    int n = 0;
+    int n = 0; //成功图片数量
     for (int i = 0; i < page_num; i++)
     {
         std::vector<std::string> page_doc = parse_page_doc_id(chunk, url + std::to_string(i));
-        for (auto &d : page_doc)
+        for (auto &d : page_doc) //返回的动态按时间从晚到早排序
         {
-            img_group g = parse_img_group(img_chunk, d);
+            img_group g = parse_img_group(img_chunk, d); //一个动态下的若干图片
             if (g.upload_time.substr(0, 10) > to_time)
-            {
-                continue;
+            {             //时间比较是字符串比较，前十位格式为YYYY-MM-DD
+                continue; //还未进入时间段
             }
             if (g.upload_time.substr(0, 10) < from_time)
             {
-                i = page_num;
-                break;
+                i = page_num; //不在时间段内，大循环结束
+                break;        //不在时间段内，小循环结束
             }
-            std::string doc_path = join_path(save_path, d);
+            std::string doc_path = join_path(save_path, d); //动态的保存路径
             if ((check_dir(doc_path) && make_direct(doc_path)) ||
                 (write_comment(join_path(doc_path, "description.txt"), g.upload_time, g.description)))
-            {
+            { //动态路径不存在又新建失败，或是不能写入说明
                 fail_doc.push_back(d);
-                continue;
+                continue; //记录失败
             }
             for (auto &u : g.imgs)
-            {
+            { //保存图片
                 std::string m = join_path(doc_path, basename(u));
                 if (check_dir(m) && download_img(u, m, img_chunk))
                 {
@@ -299,8 +303,8 @@ void BiliAlbumParser::parse_doc_id(const std::string &save_path)
     curl_slist_free_all(img_chunk);
     std::cout << "\033[K" << std::endl;
     if (fail_doc.size())
-    {
-        std::cout << "Fail doc id list:" << std::endl;
+    { //输出失败列表
+        std::cout << "Failure doc id:" << std::endl;
         for (auto &d : fail_doc)
         {
             std::cout << d << std::endl;
@@ -309,6 +313,7 @@ void BiliAlbumParser::parse_doc_id(const std::string &save_path)
     std::cout << "Download " << n << " images" << std::endl;
 }
 
+//解析一个动态下的图片
 img_group BiliAlbumParser::parse_img_group(const struct curl_slist *chunk, const std::string &one_doc_id)
 {
     CURL *curl = nullptr;
@@ -325,39 +330,49 @@ img_group BiliAlbumParser::parse_img_group(const struct curl_slist *chunk, const
         }
         else
         {
-            std::cerr << "perform_get() failed in BiliAlbumParser::parse_img_group(): " << curl_easy_strerror(res) << std::endl;
+            std::cerr << "Error: parse_img_group-perform_get:\n"
+                      << curl_easy_strerror(res) << std::endl;
         }
         free(mem.memory);
     }
     else
     {
-        std::cerr << "Initial fail: curl_easy_init() in BiliAlbumParser::parse_img_group()" << std::endl;
+        std::cerr << "Error: parse_img_group-curl_easy_init" << std::endl;
     }
     curl_easy_cleanup(curl);
     return g;
 }
 
+// 设置、解析和下载
 void BiliAlbumParser::parse(const std::string &save_path)
 {
     std::string user_path = join_path(save_path, user_id);
     if (check_dir(user_path) && make_direct(user_path))
-    {
-        std::cerr << "Bad save path: " << save_path << std::endl;
+    { //检查保存路径
+        std::cerr << "Nonexistent saving path: " << save_path << std::endl;
         return;
     }
     else
     {
-        std::cout << "Success check save path: " << save_path << std::endl;
-        std::cout << *this << std::endl;
+        std::cout << "Checked Saving path: " << save_path << std::endl;
         parse_page_num();
+        std::cout << *this << "Continue? [y]/n" << std::endl;
+        char c = std::cin.get();
+        c = std::cin.get();
+        if (c == 'n')
+        {
+            return;
+        }
         parse_doc_id(user_path);
     }
 }
 
+// 打印设置信息
 std::ostream &operator<<(std::ostream &os, const BiliAlbumParser &b)
 {
     os << "User: " << b.get_user_id() << "\n"
        << "From: " << b.from_time << "\n"
-       << "  To: " << b.to_time << std::endl;
+       << "  To: " << b.to_time << "\n"
+       << "Page: " << b.get_page_num() << std::endl;
     return os;
 }
