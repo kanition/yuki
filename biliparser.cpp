@@ -229,7 +229,7 @@ void BiliAlbumParser::parse_doc_id(const std::string &save_path)
     }
     if (n > 0)
     {
-        std::cout << "(*･ω< ) 一共搞到" << n << "张好康的" << std::endl;
+        std::cout << "(*^▽^*) 一共搞到" << n << "张好康的" << std::endl;
     }
 }
 
@@ -284,12 +284,12 @@ void BiliAlbumParser::parse(const std::string &save_path)
         {
             std::cout << "(<ゝω·)☆ 接受你的挑战\n"
                       << "保存路径: " << save_path << std::endl
-                      << *this << "\n(ﾉ≧∀≦)ﾉ 准备起飞? [y]/n" << std::endl;
+                      << *this << "\n(/≧∀≦)/ 准备起飞? [y]/n" << std::endl;
             char c = std::cin.get();
             clean_cin();
             if (c == 'n' || c == 'N')
             {
-                std::cout << "(⁎˃ᴗ˂⁎) 收工啦" << std::endl;
+                std::cout << "收工啦ε=ε=ε=ε=ε=(/>∀<)/" << std::endl;
                 return;
             }
             parse_doc_id(user_path);
