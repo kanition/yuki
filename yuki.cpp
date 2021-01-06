@@ -15,7 +15,7 @@ int main(int argc, char const *argv[])
     int color_flag = set_color_cmd(dwOriginalOutMode, dwOriginalInMode, false);
     if (color_flag)
     {
-        std::cout << "Warning: failed in setting virtual terminal" << std::endl;
+        std::cerr << "Warning: failed in setting virtual terminal" << std::endl;
     }
 #endif
     std::cout << "\n\
@@ -53,6 +53,8 @@ int main(int argc, char const *argv[])
         bl.parse(save_path);
         curl_global_cleanup();
     }
+    std::cout << "按Enter键退出" << std::endl;
+    std::cin.get();
 #ifdef WIN_OK_H
     if (!color_flag)
     { //恢复显示设置

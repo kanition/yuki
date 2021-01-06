@@ -1,5 +1,5 @@
 ﻿#include "get_resp.h"
-#include "nlohmann/json.hpp"
+#include "json.hpp"
 #include "img_group.h"
 #include "yuki.h"
 #ifdef WIN_OK_H
@@ -14,12 +14,9 @@ int download_img(const std::string &url, const std::string &save_path, const cur
     int status = 1;
     if (curl)
     {
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());  //图片链接
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk); //请求头
-#ifdef DEBUG
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-#endif
-        // curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());      //图片链接
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);     //请求头
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);        //关闭进度表
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fwrite); //保存函数
         FILE *pagefile = nullptr;
 #ifdef WIN_OK_H
@@ -39,7 +36,7 @@ int download_img(const std::string &url, const std::string &save_path, const cur
     }
     else
     {
-        std::cerr << "Error: download_img-curl_easy_init"
+        std::cerr << "\nError: download_img-curl_easy_init"
                   << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
     }
     return status;
@@ -74,7 +71,7 @@ static size_t write_memory_callback(void *contents, size_t size, size_t nmemb, M
     char *ptr = static_cast<char *>(realloc(mem->memory, mem->size + realsize + 1));
     if (ptr == nullptr)
     {
-        std::cerr << "Error: write_memory_callback: No enough memory"
+        std::cerr << "\nError: write_memory_callback: No enough memory"
                   << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
         return 0; //返回处理量与待处理量不统一可引发报错
     }
@@ -88,13 +85,20 @@ static size_t write_memory_callback(void *contents, size_t size, size_t nmemb, M
 // 按设置执行网络请求并写入内存
 CURLcode perform_get(CURL *curl, const curl_slist *chunk, MemoryStruct &mem, const std::string &url)
 {
-    mem.memory = static_cast<char *>(malloc(1));       //随着调用realloc增长
-    mem.size = 0;                                      //此时无数据
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk); //请求头
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());  //请求地址
+    mem.memory = static_cast<char *>(malloc(1)); //随着调用realloc增长
+    if (mem.memory == nullptr)
+    {
+        std::cerr << "\nError: perform_get: No enough memory"
+                  << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
+        return CURLE_OUT_OF_MEMORY;
+    }
+    mem.size = 0; //此时无数据
 #ifdef DEBUG
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    std::cout << "\ncall perform_get: url=\n"
+              << url << std::endl;
 #endif
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);                    //请求头
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());                     //请求地址
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_memory_callback); //写入内存的钩子函数
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &mem);                      //设置内存地址
     return curl_easy_perform(curl);
@@ -103,6 +107,10 @@ CURLcode perform_get(CURL *curl, const curl_slist *chunk, MemoryStruct &mem, con
 // 解析json格式字符串并获取页面总数
 int get_all_count(const char *s)
 {
+#ifdef DEBUG
+    std::cout << "\ncall get_all_count: s=\n"
+              << s << std::endl;
+#endif
     nlohmann::json j = nlohmann::json::parse(s);
     int code = j["code"].get<int>();
     if (!code)
@@ -115,6 +123,10 @@ int get_all_count(const char *s)
 // 解析json格式字符串并获取动态说明和图片地址
 img_group get_img_group(const char *s, const std::string &one_doc_id)
 {
+#ifdef DEBUG
+    std::cout << "\ncall get_img_group: one_doc_id=" << one_doc_id << "\ns=\n"
+              << s << std::endl;
+#endif
     img_group g;
     g.doc_id = one_doc_id; //动态ID
     nlohmann::json j = nlohmann::json::parse(s);
@@ -135,6 +147,10 @@ img_group get_img_group(const char *s, const std::string &one_doc_id)
 // 解析json格式字符串并获取当前页的动态编号列表
 std::vector<std::string> doc_list(const char *s)
 {
+#ifdef DEBUG
+    std::cout << "\ncall doc_list: s=\n"
+              << s << std::endl;
+#endif
     nlohmann::json j = nlohmann::json::parse(s);
     std::vector<std::string> doc_list;
     int code = j["code"].get<int>();
@@ -159,7 +175,7 @@ int write_comment(const std::string &txt_name, const std::string &upload_time, c
         file.close();
         return 0;
     }
-    std::cerr << "Error: write_comment: Failed in opening File: " << txt_name
+    std::cerr << "\nError: write_comment: Failed in opening File: " << txt_name
               << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
     return 1;
 }

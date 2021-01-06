@@ -21,7 +21,7 @@ BiliAlbumParser::BiliAlbumParser(const std::string &s) : page_num(0), from_time(
     }
     else
     {
-        std::cerr << "(Ｔ▽Ｔ) 查无此人, 一定是你搞错啦: " << s << std::endl;
+        std::cerr << "\n(Ｔ▽Ｔ) 查无此人, 一定是你搞错啦: " << s << std::endl;
     }
 }
 
@@ -47,7 +47,8 @@ int BiliAlbumParser::parse_page_num()
             int code_or_page = get_all_count(mem.memory); //解析页面数量
             if (code_or_page < 0)
             {
-                std::cerr << curl_easy_strerror(res)
+                std::cerr << "\n"
+                          << curl_easy_strerror(res)
                           << "Error: parse_page_num-code_or_page=" << code_or_page << "\n"
                           << "\n(⊙︿⊙) 好像被小电视发现了,待会儿再试吧" << std::endl;
             }
@@ -59,7 +60,8 @@ int BiliAlbumParser::parse_page_num()
         }
         else
         {
-            std::cerr << curl_easy_strerror(res) << "\nError: parse_page_num-perform_get"
+            std::cerr << "\n"
+                      << curl_easy_strerror(res) << "\nError: parse_page_num-perform_get"
                       << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
         }
         free(mem.memory);
@@ -68,7 +70,7 @@ int BiliAlbumParser::parse_page_num()
     }
     else
     {
-        std::cerr << "Error: parse_page_num-curl_easy_init"
+        std::cerr << "\nError: parse_page_num-curl_easy_init"
                   << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
     }
     return status;
@@ -133,13 +135,15 @@ std::vector<std::string> BiliAlbumParser::parse_page_doc_id(const struct curl_sl
             page_doc = doc_list(mem.memory);
             if (page_doc.empty())
             {
-                std::cerr << curl_easy_strerror(res) << "\nError: parse_page_doc_id-perform_get"
+                std::cerr << "\n"
+                          << curl_easy_strerror(res) << "\nError: parse_page_doc_id-perform_get"
                           << "\n(⊙︿⊙) 好像被小电视发现了,待会儿再试吧" << std::endl;
             }
         }
         else
         {
-            std::cerr << curl_easy_strerror(res) << "\nError: parse_page_doc_id-perform_get"
+            std::cerr << "\n"
+                      << curl_easy_strerror(res) << "\nError: parse_page_doc_id-perform_get"
                       << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
         }
         free(mem.memory);
@@ -147,7 +151,7 @@ std::vector<std::string> BiliAlbumParser::parse_page_doc_id(const struct curl_sl
     }
     else
     {
-        std::cerr << "Error: parse_page_doc_id-curl_easy_init"
+        std::cerr << "\nError: parse_page_doc_id-curl_easy_init"
                   << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
     }
     return page_doc;
@@ -217,7 +221,7 @@ void BiliAlbumParser::parse_doc_id(const std::string &save_path)
     std::cout << "\033[K" << std::endl;
     if (fail_doc.size())
     { //输出失败列表
-        std::cerr << "(T^T) 这几个动态ID失败了:" << std::endl;
+        std::cerr << "\n(T^T) 这几个动态ID失败了:" << std::endl;
         for (auto &d : fail_doc)
         {
             std::cout << d << std::endl;
@@ -225,7 +229,7 @@ void BiliAlbumParser::parse_doc_id(const std::string &save_path)
     }
     if (remain_doc)
     {
-        std::cerr << "(T^T) 未完成全部页面解析" << std::endl;
+        std::cerr << "\n(T^T) 未完成全部页面解析" << std::endl;
     }
     if (n > 0)
     {
@@ -249,20 +253,22 @@ img_group BiliAlbumParser::parse_img_group(const struct curl_slist *chunk, const
             g = get_img_group(mem.memory, one_doc_id);
             if (g.imgs.empty())
             {
-                std::cerr << curl_easy_strerror(res) << "\nError: parse_img_group-get_img_group"
+                std::cerr << "\n"
+                          << curl_easy_strerror(res) << "\nError: parse_img_group-get_img_group"
                           << "\n(⊙︿⊙) 好像被小电视发现了,待会儿再试吧" << std::endl;
             }
         }
         else
         {
-            std::cerr << curl_easy_strerror(res) << "\nError: parse_img_group-perform_get"
+            std::cerr << "\n"
+                      << curl_easy_strerror(res) << "\nError: parse_img_group-perform_get"
                       << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
         }
         free(mem.memory);
     }
     else
     {
-        std::cerr << "Error: parse_img_group-curl_easy_init"
+        std::cerr << "\nError: parse_img_group-curl_easy_init"
                   << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
     }
     curl_easy_cleanup(curl);
@@ -275,7 +281,7 @@ void BiliAlbumParser::parse(const std::string &save_path)
     std::string user_path = join_path(save_path, user_id);
     if (check_dir(user_path) && make_direct(user_path))
     { //检查保存路径
-        std::cerr << "(￣へ￣) 哼你骗我, 这里连文件夹都没建: " << save_path << std::endl;
+        std::cerr << "\n(￣へ￣) 哼你骗我, 这里连文件夹都没建: " << save_path << std::endl;
         return;
     }
     else
