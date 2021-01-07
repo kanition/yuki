@@ -12,7 +12,7 @@
 
 BiliAlbumParser::~BiliAlbumParser() {}
 BiliAlbumParser::BiliAlbumParser() : page_num(0), from_time("1900-00-00"), to_time("9999-99-99") {}
-BiliAlbumParser::BiliAlbumParser(const BiliAlbumParser &b) : user_id(b.user_id), page_num(b.page_num), from_time(b.from_time), to_time(b.to_time) {}
+BiliAlbumParser::BiliAlbumParser(const BiliAlbumParser &b) : user_id(b.user_id), user_name(b.user_name), page_num(b.page_num), from_time(b.from_time), to_time(b.to_time) {}
 BiliAlbumParser::BiliAlbumParser(const std::string &s) : page_num(0), from_time("1900-00-00"), to_time("9999-99-99")
 {
     if (check_str_id(s))
@@ -30,6 +30,10 @@ std::string BiliAlbumParser::get_user_id() const
     return user_id;
 }
 
+std::string BiliAlbumParser::get_user_name() const
+{
+    return user_name;
+}
 // 获取页面数量
 int BiliAlbumParser::parse_page_num()
 {
@@ -76,6 +80,52 @@ int BiliAlbumParser::parse_page_num()
     return status;
 }
 
+// 获取用户名
+int BiliAlbumParser::parse_user_name()
+{
+    CURL *curl = nullptr;
+    curl = curl_easy_init();
+    int status = 1;
+    if (curl)
+    {
+        struct curl_slist *chunk = base_chunk("https://space.bilibili.com", "https://space.bilibili.com/");
+        std::string url = "https://api.bilibili.com/x/space/acc/info?jsonp=jsonp&mid=" + user_id;
+        struct MemoryStruct mem;
+        CURLcode res = perform_get(curl, chunk, mem, url);
+        if (res == CURLE_OK)
+        {
+            std::string code_or_name = get_name(mem.memory); //解析用户名
+            if (code_or_name.empty())
+            {
+                std::cerr << "\n"
+                          << curl_easy_strerror(res)
+                          << "Error: parse_user_name-code_or_name=" << code_or_name << "\n"
+                          << "\n(⊙︿⊙) 好像被小电视发现了,待会儿再试吧" << std::endl;
+            }
+            else
+            {
+                user_name = code_or_name;
+                status = 0;
+            }
+        }
+        else
+        {
+            std::cerr << "\n"
+                      << curl_easy_strerror(res) << "\nError: parse_user_name-perform_get"
+                      << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
+        }
+        free(mem.memory);
+        curl_slist_free_all(chunk);
+        curl_easy_cleanup(curl);
+    }
+    else
+    {
+        std::cerr << "\nError: parse_user_name-curl_easy_init"
+                  << "\n(⊙︿⊙) 对不起,我似乎遇到了点麻烦" << std::endl;
+    }
+    return status;
+}
+
 int BiliAlbumParser::get_page_num() const
 {
     return page_num;
@@ -110,11 +160,12 @@ std::string format_time(unsigned year, unsigned month, unsigned day)
 void BiliAlbumParser::set_time()
 {
     unsigned year, month, day;
-    std::cout << "～(￣▽￣～) 输入*起始*年月日, 像这样用空格间隔开 2000 09 13: " << std::endl;
+    std::cout << "～(￣▽￣～) 依次输入*起始*年月日, 可以每输一个数按一次Enter,\n"
+              << "也可以像这样一口气输入哦 2000 09 13: " << std::endl;
     std::cin >> year >> month >> day;
     from_time = format_time(year, month, day);
     clean_cin();
-    std::cout << "(～￣▽￣)～ 输入*结束*年月日, 老规矩: " << std::endl;
+    std::cout << "(～￣▽￣)～ 依次输入*结束*年月日, 老规矩: " << std::endl;
     std::cin >> year >> month >> day;
     clean_cin();
     to_time = format_time(year, month, day);
@@ -286,7 +337,7 @@ void BiliAlbumParser::parse(const std::string &save_path)
     }
     else
     {
-        if (!parse_page_num())
+        if (!parse_page_num() && !parse_user_name())
         {
             std::cout << "(<ゝω·)☆ 接受你的挑战\n"
                       << "保存路径: " << save_path << std::endl
@@ -307,6 +358,7 @@ void BiliAlbumParser::parse(const std::string &save_path)
 std::ostream &operator<<(std::ostream &os, const BiliAlbumParser &b)
 {
     os << "用户编号: " << b.get_user_id() << "\n"
+       << "用户昵称: " << b.get_user_name() << "\n"
        << "开始时间: " << b.from_time << "\n"
        << "结束时间: " << b.to_time << "\n"
        << "检测页数: " << b.get_page_num();

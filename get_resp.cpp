@@ -120,6 +120,23 @@ int get_all_count(const char *s)
     return -1;
 }
 
+// 解析json格式字符串并获取用户名
+std::string get_name(const char *s)
+{
+#ifdef DEBUG
+    std::cout << "\ncall get_name: s=\n"
+              << s << std::endl;
+#endif
+    nlohmann::json j = nlohmann::json::parse(s);
+    int code = j["code"].get<int>();
+    std::string name;
+    if (!code)
+    {
+        name = j["data"]["name"].get<std::string>();
+    }
+    return name;
+}
+
 // 解析json格式字符串并获取动态说明和图片地址
 img_group get_img_group(const char *s, const std::string &one_doc_id)
 {

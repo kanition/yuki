@@ -14,9 +14,10 @@
 #include <direct.h>
 #define OS_SEP ('\\')
 
-// Win设置特殊显示或恢复原有设置，若reset为false，则设置特殊显示并原有的返回输出、输入设置码
-// 若reset为true，则使用传入的输出、输入设置码设置显示，一般用于恢复原有设置，详见微软官网API
-int set_color_cmd(DWORD &dwOriginalOutMode, DWORD &dwOriginalInMode, bool reset)
+// Win设置特殊显示或恢复原有设置，若reset为false，则设置特殊显示并原有的返回输出设置码
+// 若reset为true，则使用传入的输出设置码设置显示，一般用于恢复原有设置，详见微软官网API
+// https://docs.microsoft.com/zh-cn/windows/console/console-virtual-terminal-sequences#screen-colors
+int set_color_cmd(DWORD &dwOriginalOutMode, bool reset)
 {
     // Set output mode to handle virtual terminal sequences
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -24,14 +25,9 @@ int set_color_cmd(DWORD &dwOriginalOutMode, DWORD &dwOriginalInMode, bool reset)
     {
         return false;
     }
-    HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
-    if (hIn == INVALID_HANDLE_VALUE)
-    {
-        return false;
-    }
     if (reset)
     { //使用传入的设置码
-        if ((!SetConsoleMode(hOut, dwOriginalOutMode)) || (!SetConsoleMode(hIn, dwOriginalInMode)))
+        if (!SetConsoleMode(hOut, dwOriginalOutMode))
         {
             return -1;
         }
@@ -42,23 +38,16 @@ int set_color_cmd(DWORD &dwOriginalOutMode, DWORD &dwOriginalInMode, bool reset)
         {
             return false;
         }
-        if (!GetConsoleMode(hIn, &dwOriginalInMode))
-        {
-            return false;
-        }
         if (!SetConsoleMode(hOut, dwOriginalOutMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING))
         {
             return -1; // Failed to set any VT mode
-        }
-        if (!SetConsoleMode(hIn, dwOriginalInMode | ENABLE_VIRTUAL_TERMINAL_INPUT))
-        {
-            return -1; // Failed to set VT input mode
         }
     }
     return 0;
 }
 #endif
 
+//清空缓冲区待读入输入
 void clean_cin()
 {
     std::cin.clear();

@@ -7,7 +7,7 @@
 #ifdef WIN_OK_H
 #include <wchar.h>
 #include <windows.h>
-int set_color_cmd(DWORD &, DWORD &, bool);
+int set_color_cmd(DWORD &, bool);
 #endif
 void clean_cin();
 std::string add_zero(const std::string &, std::string::size_type);

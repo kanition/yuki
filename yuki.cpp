@@ -11,24 +11,24 @@
 int main(int argc, char const *argv[])
 {
 #ifdef WIN_OK_H
-    DWORD dwOriginalOutMode = 0, dwOriginalInMode = 0;
-    int color_flag = set_color_cmd(dwOriginalOutMode, dwOriginalInMode, false);
+    DWORD dwOriginalOutMode = 0;
+    int color_flag = set_color_cmd(dwOriginalOutMode, false);
     if (color_flag)
     {
         std::cerr << "Warning: failed in setting virtual terminal" << std::endl;
     }
 #endif
+    //\x1b[38;2;<r>;<g>;<b>m设置颜色,\x1b[m恢复默认颜色
     std::cout << "\n\
-██╗   ██╗ ██╗   ██╗ ██╗  ██╗ ██╗\n\
-╚██╗ ██╔╝ ██║   ██║ ██║ ██╔╝ ██║\n\
- ╚████╔╝  ██║   ██║ █████╔╝  ██║\n\
-  ╚██╔╝   ██║   ██║ ██╔═██╗  ██║\n\
-   ██║    ╚██████╔╝ ██║  ██╗ ██║\n\
-   ╚═╝     ╚═════╝  ╚═╝  ╚═╝ ╚═╝"
+\x1b[38;2;108;172;203m██╗   ██╗ ██╗   ██╗ \x1b[38;2;184;153;158m██╗  ██╗ \x1b[38;2;108;172;203m██╗\n\
+\x1b[38;2;108;172;203m╚██╗ ██╔╝ ██║   ██║ \x1b[38;2;184;153;158m██║ ██╔╝ \x1b[38;2;108;172;203m██║\n\
+\x1b[38;2;108;172;203m ╚████╔╝  ██║   ██║ \x1b[38;2;184;153;158m█████╔╝  \x1b[38;2;108;172;203m██║\n\
+\x1b[38;2;108;172;203m  ╚██╔╝   ██║   ██║ \x1b[38;2;184;153;158m██╔═██╗  \x1b[38;2;108;172;203m██║\n\
+\x1b[38;2;108;172;203m   ██║    ╚██████╔╝ \x1b[38;2;184;153;158m██║  ██╗ \x1b[38;2;108;172;203m██║\n\
+\x1b[38;2;108;172;203m   ╚═╝     ╚═════╝  \x1b[38;2;184;153;158m╚═╝  ╚═╝ \x1b[38;2;108;172;203m╚═╝\x1b[m"
               << std::endl;
 #ifdef YUKI_VERSION_MAJOR
-    std::cout
-        << "版本: " << YUKI_VERSION_MAJOR << "." << YUKI_VERSION_MINOR << std::endl;
+    std::cout << "版本: " << YUKI_VERSION_MAJOR << "." << YUKI_VERSION_MINOR << std::endl;
 #endif
     std::string user_id;
     std::cout << "\n(*^▽^*) 你要看哪个Up的相册呢? 输入Ta的用户ID:" << std::endl;
@@ -58,7 +58,7 @@ int main(int argc, char const *argv[])
 #ifdef WIN_OK_H
     if (!color_flag)
     { //恢复显示设置
-        set_color_cmd(dwOriginalOutMode, dwOriginalInMode, true);
+        set_color_cmd(dwOriginalOutMode, true);
     }
 #endif
     return 0;
