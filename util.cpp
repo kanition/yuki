@@ -1,6 +1,7 @@
 ﻿#include "util.h"
 #include <limits>
 #include <ios>
+#include <vector>
 
 #ifdef LINUX_OK_H
 #include <unistd.h>
@@ -29,7 +30,7 @@ int set_color_cmd(DWORD &dwOriginalOutMode, bool reset)
     { //使用传入的设置码
         if (!SetConsoleMode(hOut, dwOriginalOutMode))
         {
-            return -1;
+            return 1;
         }
     }
     else
@@ -40,7 +41,7 @@ int set_color_cmd(DWORD &dwOriginalOutMode, bool reset)
         }
         if (!SetConsoleMode(hOut, dwOriginalOutMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING))
         {
-            return -1; // Failed to set any VT mode
+            return 1; // Failed to set any VT mode
         }
     }
     return 0;
@@ -73,7 +74,7 @@ int check_dir(const std::string &p)
 #ifdef WIN_OK_H
     return _access(p.c_str(), 0);
 #endif
-    return -1;
+    return 1;
 }
 
 // 新建文件夹，成功返回0，否则返回非0
@@ -85,7 +86,7 @@ int make_direct(const std::string &p)
 #ifdef WIN_OK_H
     return _mkdir(p.c_str());
 #endif
-    return -1;
+    return 1;
 }
 
 // 移去字符串首尾两端任意多个正反斜杠用于规范化路径
@@ -143,15 +144,193 @@ std::string basename(const std::string &p)
     return p.substr(p.find_last_of("/\\") + 1);
 }
 
-// 检查ID均为数字，符合为true
-bool check_str_id(const std::string &s)
+int check_save_path(std::string &path)
+{
+    return check_dir(path) && make_direct(path);
+}
+
+// 检查string均为数字
+int check_str_id(const std::string &s)
 {
     for (const auto &c : s)
     {
         if (c < '0' || c > '9')
         {
-            return false;
+            std::cerr << "\n(Ｔ▽Ｔ) 查无此人, 一定是你搞错啦: " << s << std::endl;
+            return 1;
         }
     }
-    return true;
+    return 0;
+}
+
+int check_user_id(const std::string &s)
+{
+    int flag = check_str_id(s);
+    if (flag)
+    {
+        std::cerr << "\n(Ｔ▽Ｔ) 查无此人, 一定是你搞错啦: " << s << std::endl;
+    }
+    return flag;
+}
+
+void now_time(unsigned &year, unsigned &month, unsigned &day)
+{
+    std::time_t t = std::time(0); // 当前时间
+    std::tm *now = std::localtime(&t);
+    year = now->tm_year + 1900;
+    month = now->tm_mon + 1;
+    day = now->tm_mday;
+}
+
+// 时间检查
+int format_time(unsigned &year, unsigned &month, unsigned &day)
+{
+    int flag = 0;
+    unsigned y, m, d, tmp;
+    now_time(y, m, d);
+    if (year > y)
+    {
+        flag = 1;
+        year = y;
+    }
+    if (month < 1)
+    {
+        flag = 1;
+        month = 1;
+    }
+    else
+    {
+        tmp = (year == y) ? m : 12;
+        if (month > tmp)
+        {
+            flag = 1;
+            month = tmp;
+        }
+    }
+    if (day < 1)
+    {
+        flag = 1;
+        day = 1;
+    }
+    else
+    {
+        tmp = (year == y && month == m) ? d : 31;
+        if (day > tmp)
+        {
+            flag = 1;
+            day = tmp;
+        }
+    }
+    return flag;
+}
+
+int string_to_time(const std::string &input_time, std::string &output_time)
+{
+    if (input_time.length() != 8 || check_str_id(input_time))
+    {
+        return 1;
+    }
+    int year = std::stoi(input_time.substr(0, 4));
+    int month = std::stoi(input_time.substr(4, 2));
+    int day = std::stoi(input_time.substr(6, 2));
+    unsigned y = year > 0 ? year : 0;
+    unsigned m = month > 0 ? month : 0;
+    unsigned d = day > 0 ? day : 0;
+    return time_str(y, m, d, output_time);
+}
+
+// 时间格式归一化YYYY-MM-DD
+int time_str(unsigned year, unsigned month, unsigned day, std::string &output_time)
+{
+    unsigned yyyy(year), mm(month), dd(day);
+    int flag = format_time(yyyy, mm, dd);
+    if (flag)
+    {
+        std::cerr << "(╬￣皿￣) 你看看你输的日期: " << year << " " << month << " " << day << std::endl;
+    }
+    output_time = add_zero(std::to_string(yyyy), 4) + "-";
+    output_time += add_zero(std::to_string(mm), 2) + "-";
+    output_time += add_zero(std::to_string(dd), 2);
+    return flag;
+}
+
+// 输入时间
+void input_time(std::string &from_time, std::string &to_time)
+{
+    unsigned year, month, day;
+    std::cout << "～(￣▽￣～) 依次输入*起始*年月日, 可以每输一个数按一次Enter,\n"
+              << "也可以像这样一口气输入哦 2000 09 13: " << std::endl;
+    std::cin >> year >> month >> day;
+    time_str(year, month, day, from_time);
+    clean_cin();
+    std::cout << "(～￣▽￣)～ 依次输入*结束*年月日, 老规矩: " << std::endl;
+    std::cin >> year >> month >> day;
+    clean_cin();
+    time_str(year, month, day, to_time);
+}
+
+int option_parse(int argc, char const *argv[], std::string &user_id, std::string &save_path, std::string &from_time, std::string &to_time)
+{
+    std::vector<std::string> option(argv, argv + argc);
+    for (int i = 1; i < argc; ++i)
+    {
+        const auto &opt = option[i];
+        if (opt == "-u")
+        {
+            if (i + 1 < argc)
+            {
+                user_id = option[++i];
+            }
+            else
+            {
+                std::cerr << "\n-u参数未指定内容" << std::endl;
+                return 1;
+            }
+        }
+        else if (opt == "-s")
+        {
+            if (i + 1 < argc)
+            {
+                save_path = option[++i];
+            }
+            else
+            {
+                std::cerr << "\n-s参数未指定内容" << std::endl;
+                return 1;
+            }
+        }
+        else if (opt == "-t")
+        {
+            if (i + 2 < argc)
+            {
+                from_time = option[++i];
+                to_time = option[++i];
+            }
+            else
+            {
+                std::cerr << "\n-t参数内容错误" << std::endl;
+                return 1;
+            }
+        }
+        else if (opt == "-h" || opt == "--help" || opt == "/?")
+        {
+            std::cout << "用法: yuki [-u 用户ID -s 保存路径 [-t 开始时间 结束时间]]\n"
+                      << "  -u  指定用户ID, 均为数字\n"
+                      << "  -s  指定保存路径, 必须为已存在的文件夹\n"
+                      << "  -t  指定搜索时间段, 分别为年月日依次组成的8位数字YYYYMMDD"
+                      << std::endl;
+            return 2;
+        }
+        else
+        {
+            std::cerr << "\n错误参数: " << opt << std::endl;
+            return 1;
+        }
+    }
+    if (user_id.empty() || save_path.empty() || check_user_id(user_id))
+    {
+        std::cerr << "\n-u或-s参数错误" << std::endl;
+        return 1;
+    }
+    return 0;
 }

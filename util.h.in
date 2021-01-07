@@ -1,6 +1,8 @@
 ﻿#ifndef YUKI_UTIL
 #define YUKI_UTIL
 #include <iostream>
+#include <ctime>
+
 #cmakedefine LINUX_OK_H
 #cmakedefine WIN_OK_H
 
@@ -26,6 +28,13 @@ std::string join_path(Ts &&... paths)
     return join_path({paths...});
 }
 std::string basename(const std::string &);
-bool check_str_id(const std::string &);
+int check_save_path(std::string &);
+int check_str_id(const std::string &);
+int check_user_id(const std::string &);
+void input_time(std::string &, std::string &);
+int format_time(unsigned &, unsigned &, unsigned &);
+int string_to_time(const std::string &, std::string &);
+int time_str(unsigned, unsigned, unsigned, std::string &);
+int option_parse(int, char const *[], std::string &, std::string &, std::string &, std::string &);
 
 #endif

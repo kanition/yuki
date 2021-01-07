@@ -1,7 +1,6 @@
 ﻿#ifndef GET_RESP
 #define GET_RESP
 #include <iostream>
-#include <vector>
 #include <stdio.h>
 #include <fstream>
 #include "curl/curl.h"

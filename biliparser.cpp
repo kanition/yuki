@@ -2,6 +2,7 @@
 #include <limits>
 #include <chrono>
 #include <thread>
+#include <vector>
 #include "biliparser.h"
 #include "get_resp.h"
 #include "yuki.h"
@@ -11,17 +12,13 @@
 #define TIME_PAUSE_MINOR 200
 
 BiliAlbumParser::~BiliAlbumParser() {}
-BiliAlbumParser::BiliAlbumParser() : page_num(0), from_time("1900-00-00"), to_time("9999-99-99") {}
+BiliAlbumParser::BiliAlbumParser() : page_num(0), from_time("1900-01-01"), to_time("9999-99-99") {}
 BiliAlbumParser::BiliAlbumParser(const BiliAlbumParser &b) : user_id(b.user_id), user_name(b.user_name), page_num(b.page_num), from_time(b.from_time), to_time(b.to_time) {}
-BiliAlbumParser::BiliAlbumParser(const std::string &s) : page_num(0), from_time("1900-00-00"), to_time("9999-99-99")
+BiliAlbumParser::BiliAlbumParser(const std::string &s) : page_num(0), from_time("1900-01-01"), to_time("9999-99-99")
 {
-    if (check_str_id(s))
+    if (!check_user_id(s))
     {
         user_id = s;
-    }
-    else
-    {
-        std::cerr << "\n(Ｔ▽Ｔ) 查无此人, 一定是你搞错啦: " << s << std::endl;
     }
 }
 
@@ -131,44 +128,33 @@ int BiliAlbumParser::get_page_num() const
     return page_num;
 }
 
-// 时间格式归一化YYYY-MM-DD
-std::string format_time(unsigned year, unsigned month, unsigned day)
-{
-    std::string a_time;
-    if (year > 9999)
-    {
-        std::cerr << "(╬￣皿￣) 你看看你输的年份: " << year << std::endl;
-        year = 9999;
-    }
-    a_time += add_zero(std::to_string(year), 4) + "-";
-    if (month > 12)
-    {
-        std::cerr << "(╬￣皿￣) 你看看你输的月份: " << month << std::endl;
-        month = 12;
-    }
-    a_time += add_zero(std::to_string(month), 2) + "-";
-    if (day > 31)
-    {
-        std::cerr << "(╬￣皿￣) 你看看你输的日期: " << day << std::endl;
-        day = 31;
-    }
-    a_time += add_zero(std::to_string(day), 2);
-    return a_time;
-}
-
 // 设置起止时间
-void BiliAlbumParser::set_time()
+int BiliAlbumParser::set_time(const std::string &beg_time, const std::string &end_time, const bool checked)
 {
-    unsigned year, month, day;
-    std::cout << "～(￣▽￣～) 依次输入*起始*年月日, 可以每输一个数按一次Enter,\n"
-              << "也可以像这样一口气输入哦 2000 09 13: " << std::endl;
-    std::cin >> year >> month >> day;
-    from_time = format_time(year, month, day);
-    clean_cin();
-    std::cout << "(～￣▽￣)～ 依次输入*结束*年月日, 老规矩: " << std::endl;
-    std::cin >> year >> month >> day;
-    clean_cin();
-    to_time = format_time(year, month, day);
+    if (checked)
+    {
+        from_time = beg_time;
+        to_time = end_time;
+        return 0;
+    }
+    std::string tmp_time;
+    if (string_to_time(beg_time, tmp_time))
+    {
+        return 1;
+    }
+    else
+    {
+        from_time = tmp_time;
+    }
+    if (string_to_time(end_time, tmp_time))
+    {
+        return 1;
+    }
+    else
+    {
+        to_time = tmp_time;
+    }
+    return 0;
 }
 
 // 获取一个页面上的多个动态id
@@ -209,14 +195,14 @@ std::vector<std::string> BiliAlbumParser::parse_page_doc_id(const struct curl_sl
 }
 
 // 保存图片和说明
-void BiliAlbumParser::parse_doc_id(const std::string &save_path)
+int BiliAlbumParser::parse_doc_id(const std::string &save_path)
 {
     struct curl_slist *chunk = base_chunk("https://space.bilibili.com", "https://space.bilibili.com/");
     struct curl_slist *img_chunk = base_chunk("https://h.bilibili.com", "https://h.bilibili.com/");
     std::string url = "https://api.vc.bilibili.com/link_draw/v1/doc/doc_list?uid=" + user_id + "&page_size=30&biz=all&page_num=";
     std::chrono::milliseconds ps_mj(TIME_PAUSE_MAJOR), ps_mn(TIME_PAUSE_MINOR); //暂停时间
     std::vector<std::string> fail_doc;
-    int n = 0, remain_doc = 0; //成功图片数量和状态码
+    int n = 0, remain_doc = 0, flag = 0; //成功图片数量和状态码
     for (int i = 0; i < page_num; i++)
     {
         std::vector<std::string> page_doc = parse_page_doc_id(chunk, url + std::to_string(i));
@@ -272,6 +258,7 @@ void BiliAlbumParser::parse_doc_id(const std::string &save_path)
     std::cout << "\033[K" << std::endl;
     if (fail_doc.size())
     { //输出失败列表
+        flag = 1;
         std::cerr << "\n(T^T) 这几个动态ID失败了:" << std::endl;
         for (auto &d : fail_doc)
         {
@@ -280,12 +267,14 @@ void BiliAlbumParser::parse_doc_id(const std::string &save_path)
     }
     if (remain_doc)
     {
+        flag = 1;
         std::cerr << "\n(T^T) 未完成全部页面解析" << std::endl;
     }
     if (n > 0)
     {
         std::cout << "(*^▽^*) 一共搞到" << n << "张好康的" << std::endl;
     }
+    return flag;
 }
 
 //解析一个动态下的图片
@@ -327,31 +316,33 @@ img_group BiliAlbumParser::parse_img_group(const struct curl_slist *chunk, const
 }
 
 // 设置、解析和下载
-void BiliAlbumParser::parse(const std::string &save_path)
+int BiliAlbumParser::parse(const std::string &save_path, const int force)
 {
     std::string user_path = join_path(save_path, user_id);
-    if (check_dir(user_path) && make_direct(user_path))
-    { //检查保存路径
-        std::cerr << "\n(￣へ￣) 哼你骗我, 这里连文件夹都没建: " << save_path << std::endl;
-        return;
-    }
-    else
+    if (check_save_path(user_path))
     {
-        if (!parse_page_num() && !parse_user_name())
+        std::cerr << "\n(￣へ￣) 哼你骗我, 这里连文件夹都没建: " << save_path << std::endl;
+        return 1;
+    }
+    if (!parse_page_num() && !parse_user_name())
+    {
+        std::cout << "(<ゝω·)☆ 接受你的挑战\n"
+                  << "保存路径: " << save_path << std::endl
+                  << *this << std::endl;
+        if (!force)
         {
-            std::cout << "(<ゝω·)☆ 接受你的挑战\n"
-                      << "保存路径: " << save_path << std::endl
-                      << *this << "\n(>ω·* )/ 准备起飞? [y]/n" << std::endl;
+            std::cout << "(>ω·* )/ 准备起飞? [y]/n" << std::endl;
             char c = std::cin.get();
             clean_cin();
             if (c == 'n' || c == 'N')
             {
                 std::cout << "收工啦ε=ε=ε=ε=ε=(*·ω-q)" << std::endl;
-                return;
+                return 0;
             }
-            parse_doc_id(user_path);
         }
+        return parse_doc_id(user_path);
     }
+    return 1;
 }
 
 // 打印设置信息
