@@ -64,7 +64,7 @@ if(CURL_PATH)
     endif()
     target_include_directories(yuki PRIVATE ${CURL_PATH}/include)
 else()
-    find_package(CURL REQUIRED)
+    find_package(CURL CONFIG REQUIRED)
     target_link_libraries(yuki PRIVATE CURL::libcurl)
 endif()
 
