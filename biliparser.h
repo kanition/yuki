@@ -33,5 +33,4 @@ public:
     int get_page_num() const;
 };
 std::ostream &operator<<(std::ostream &os, const BiliAlbumParser &b);
-int check_dir(const std::string &);
 #endif

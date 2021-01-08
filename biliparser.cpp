@@ -12,13 +12,27 @@
 #define TIME_PAUSE_MINOR 200
 
 BiliAlbumParser::~BiliAlbumParser() {}
-BiliAlbumParser::BiliAlbumParser() : page_num(0), from_time("1900-01-01"), to_time("9999-99-99") {}
+BiliAlbumParser::BiliAlbumParser() : page_num(0), from_time("2009-06-01")
+{
+    unsigned year, month, day;
+    now_time(year, month, day);
+    if (time_str(year, month, day, to_time))
+    {
+        to_time = "2099-12-31";
+    }
+}
 BiliAlbumParser::BiliAlbumParser(const BiliAlbumParser &b) : user_id(b.user_id), user_name(b.user_name), page_num(b.page_num), from_time(b.from_time), to_time(b.to_time) {}
-BiliAlbumParser::BiliAlbumParser(const std::string &s) : page_num(0), from_time("1900-01-01"), to_time("9999-99-99")
+BiliAlbumParser::BiliAlbumParser(const std::string &s) : page_num(0), from_time("2009-06-01")
 {
     if (!check_user_id(s))
     {
         user_id = s;
+    }
+    unsigned year, month, day;
+    now_time(year, month, day);
+    if (time_str(year, month, day, to_time))
+    {
+        to_time = "2099-12-31";
     }
 }
 
@@ -40,7 +54,7 @@ int BiliAlbumParser::parse_page_num()
     if (curl)
     {
         struct curl_slist *chunk = base_chunk("https://space.bilibili.com", "https://space.bilibili.com/");
-        std::string url = "https://api.vc.bilibili.com/link_draw/v1/doc/upload_count?uid=" + user_id;
+        const std::string url = "https://api.vc.bilibili.com/link_draw/v1/doc/upload_count?uid=" + user_id;
         struct MemoryStruct mem;
         CURLcode res = perform_get(curl, chunk, mem, url);
         if (res == CURLE_OK)
@@ -86,7 +100,7 @@ int BiliAlbumParser::parse_user_name()
     if (curl)
     {
         struct curl_slist *chunk = base_chunk("https://space.bilibili.com", "https://space.bilibili.com/");
-        std::string url = "https://api.bilibili.com/x/space/acc/info?jsonp=jsonp&mid=" + user_id;
+        const std::string url = "https://api.bilibili.com/x/space/acc/info?jsonp=jsonp&mid=" + user_id;
         struct MemoryStruct mem;
         CURLcode res = perform_get(curl, chunk, mem, url);
         if (res == CURLE_OK)
@@ -199,10 +213,10 @@ int BiliAlbumParser::parse_doc_id(const std::string &save_path)
 {
     struct curl_slist *chunk = base_chunk("https://space.bilibili.com", "https://space.bilibili.com/");
     struct curl_slist *img_chunk = base_chunk("https://h.bilibili.com", "https://h.bilibili.com/");
-    std::string url = "https://api.vc.bilibili.com/link_draw/v1/doc/doc_list?uid=" + user_id + "&page_size=30&biz=all&page_num=";
-    std::chrono::milliseconds ps_mj(TIME_PAUSE_MAJOR), ps_mn(TIME_PAUSE_MINOR); //暂停时间
+    const std::string url = "https://api.vc.bilibili.com/link_draw/v1/doc/doc_list?uid=" + user_id + "&page_size=30&biz=all&page_num=";
+    const std::chrono::milliseconds ps_mj(TIME_PAUSE_MAJOR), ps_mn(TIME_PAUSE_MINOR); //暂停时间
     std::vector<std::string> fail_doc;
-    int n = 0, remain_doc = 0, flag = 0; //成功图片数量和状态码
+    int n = 0, remain_doc = 0, err = 0; //成功图片数量和状态码
     for (int i = 0; i < page_num; i++)
     {
         std::vector<std::string> page_doc = parse_page_doc_id(chunk, url + std::to_string(i));
@@ -211,7 +225,7 @@ int BiliAlbumParser::parse_doc_id(const std::string &save_path)
             remain_doc = 1;
             break; //解析出错结束大循环
         }
-        for (auto &d : page_doc) //返回的动态按时间从晚到早排序
+        for (const auto &d : page_doc) //返回的动态按时间从晚到早排序
         {
             img_group g = parse_img_group(img_chunk, d); //一个动态下的若干图片
             if (g.imgs.empty())
@@ -232,16 +246,16 @@ int BiliAlbumParser::parse_doc_id(const std::string &save_path)
                 std::cout << "\033[K跳过: " << g.upload_time << " 动态ID: " << d << "\r" << std::flush;
                 break; //不在时间段内，小循环结束
             }
-            std::string doc_path = join_path(save_path, d); //动态的保存路径
+            const std::string doc_path = join_path(save_path, d); //动态的保存路径
             if ((check_dir(doc_path) && make_direct(doc_path)) ||
                 (write_comment(join_path(doc_path, "description.txt"), g.upload_time, g.description)))
             { //动态路径不存在又新建失败，或是不能写入说明
                 fail_doc.push_back(d);
                 continue; //记录失败
             }
-            for (auto &u : g.imgs)
+            for (const auto &u : g.imgs)
             { //保存图片
-                std::string m = join_path(doc_path, basename(u));
+                const std::string m = join_path(doc_path, basename(u));
                 if (check_dir(m) && download_img(u, m, img_chunk))
                 {
                     fail_doc.push_back(d);
@@ -258,7 +272,7 @@ int BiliAlbumParser::parse_doc_id(const std::string &save_path)
     std::cout << "\033[K" << std::endl;
     if (fail_doc.size())
     { //输出失败列表
-        flag = 1;
+        err = 1;
         std::cerr << "\n(T^T) 这几个动态ID失败了:" << std::endl;
         for (auto &d : fail_doc)
         {
@@ -267,14 +281,14 @@ int BiliAlbumParser::parse_doc_id(const std::string &save_path)
     }
     if (remain_doc)
     {
-        flag = 1;
+        err = 1;
         std::cerr << "\n(T^T) 未完成全部页面解析" << std::endl;
     }
     if (n > 0)
     {
         std::cout << "(*^▽^*) 一共搞到" << n << "张好康的" << std::endl;
     }
-    return flag;
+    return err;
 }
 
 //解析一个动态下的图片
@@ -285,7 +299,7 @@ img_group BiliAlbumParser::parse_img_group(const struct curl_slist *chunk, const
     img_group g;
     if (curl)
     {
-        std::string url = "https://api.vc.bilibili.com/link_draw/v1/doc/detail?doc_id=" + one_doc_id;
+        const std::string url = "https://api.vc.bilibili.com/link_draw/v1/doc/detail?doc_id=" + one_doc_id;
         struct MemoryStruct mem;
         CURLcode res = perform_get(curl, chunk, mem, url);
         if (res == CURLE_OK)
@@ -318,7 +332,7 @@ img_group BiliAlbumParser::parse_img_group(const struct curl_slist *chunk, const
 // 设置、解析和下载
 int BiliAlbumParser::parse(const std::string &save_path, const int force)
 {
-    std::string user_path = join_path(save_path, user_id);
+    const std::string user_path = join_path(save_path, user_id);
     if (check_save_path(user_path))
     {
         std::cerr << "\n(￣へ￣) 哼你骗我, 这里连文件夹都没建: " << save_path << std::endl;

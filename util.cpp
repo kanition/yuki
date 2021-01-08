@@ -18,7 +18,7 @@
 // Win设置特殊显示或恢复原有设置，若reset为false，则设置特殊显示并原有的返回输出设置码
 // 若reset为true，则使用传入的输出设置码设置显示，一般用于恢复原有设置，详见微软官网API
 // https://docs.microsoft.com/zh-cn/windows/console/console-virtual-terminal-sequences#screen-colors
-int set_color_cmd(DWORD &dwOriginalOutMode, bool reset)
+int set_color_cmd(DWORD &dwOriginalOutMode, const bool reset)
 {
     // Set output mode to handle virtual terminal sequences
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -57,7 +57,7 @@ void clean_cin()
 
 // 数字字符串左边补零直到指定位数n
 // 例如s="35", n=4, 返回"0035"
-std::string add_zero(const std::string &s, std::string::size_type n)
+std::string add_zero(const std::string &s, const std::string::size_type n)
 {
     std::string t(n, '0');
     t += s;
@@ -144,7 +144,7 @@ std::string basename(const std::string &p)
     return p.substr(p.find_last_of("/\\") + 1);
 }
 
-int check_save_path(std::string &path)
+int check_save_path(const std::string &path)
 {
     return check_dir(path) && make_direct(path);
 }
@@ -156,74 +156,94 @@ int check_str_id(const std::string &s)
     {
         if (c < '0' || c > '9')
         {
-            std::cerr << "\n(Ｔ▽Ｔ) 查无此人, 一定是你搞错啦: " << s << std::endl;
             return 1;
         }
     }
     return 0;
 }
 
+// 检查用户ID均为数字
 int check_user_id(const std::string &s)
 {
-    int flag = check_str_id(s);
-    if (flag)
+    int err = check_str_id(s);
+    if (err)
     {
         std::cerr << "\n(Ｔ▽Ｔ) 查无此人, 一定是你搞错啦: " << s << std::endl;
     }
-    return flag;
+    return err;
 }
 
+// 获取当前时间
 void now_time(unsigned &year, unsigned &month, unsigned &day)
 {
+#ifdef WIN_OK_H
+    struct tm now;
+    time_t rawtime;
+    time(&rawtime);
+    errno_t err = localtime_s(&now, &rawtime);
+    if (err)
+    {
+        year = 2099;
+        month = 12;
+        day = 31;
+    }
+    else
+    {
+        year = now.tm_year + 1900;
+        month = now.tm_mon + 1;
+        day = now.tm_mday;
+    }
+#else
     std::time_t t = std::time(0); // 当前时间
     std::tm *now = std::localtime(&t);
     year = now->tm_year + 1900;
     month = now->tm_mon + 1;
     day = now->tm_mday;
+#endif
 }
 
+// 检查数字范围
+static int range_min_max(unsigned &n, const unsigned beg_n, const unsigned end_n)
+{
+    if (n < beg_n)
+    {
+        n = beg_n;
+        return 1;
+    }
+    if (n > end_n)
+    {
+        n = end_n;
+        return 1;
+    }
+    return 0;
+}
 // 时间检查
 int format_time(unsigned &year, unsigned &month, unsigned &day)
 {
-    int flag = 0;
-    unsigned y, m, d, tmp;
+    int err = 0;
+    unsigned y, m, d;
     now_time(y, m, d);
     if (year > y)
     {
-        flag = 1;
         year = y;
+        month = m;
+        day = d;
+        return 1;
     }
-    if (month < 1)
+    err = range_min_max(year, 1900, 2099) || err;
+    err = range_min_max(month, 1, 12) || err;
+    err = range_min_max(day, 1, 31) || err;
+    if ((year * 10000 + month * 100 + day) > (y * 10000 + m * 100 + d))
     {
-        flag = 1;
-        month = 1;
+        err = 1;
+        year = y;
+        month = m;
+        day = d;
     }
-    else
-    {
-        tmp = (year == y) ? m : 12;
-        if (month > tmp)
-        {
-            flag = 1;
-            month = tmp;
-        }
-    }
-    if (day < 1)
-    {
-        flag = 1;
-        day = 1;
-    }
-    else
-    {
-        tmp = (year == y && month == m) ? d : 31;
-        if (day > tmp)
-        {
-            flag = 1;
-            day = tmp;
-        }
-    }
-    return flag;
+    return err;
 }
 
+// 形如20201225字符串转为时间
 int string_to_time(const std::string &input_time, std::string &output_time)
 {
     if (input_time.length() != 8 || check_str_id(input_time))
@@ -240,35 +260,37 @@ int string_to_time(const std::string &input_time, std::string &output_time)
 }
 
 // 时间格式归一化YYYY-MM-DD
-int time_str(unsigned year, unsigned month, unsigned day, std::string &output_time)
+int time_str(const unsigned year, const unsigned month, const unsigned day, std::string &output_time)
 {
     unsigned yyyy(year), mm(month), dd(day);
-    int flag = format_time(yyyy, mm, dd);
-    if (flag)
+    int err = format_time(yyyy, mm, dd);
+    if (err)
     {
         std::cerr << "(╬￣皿￣) 你看看你输的日期: " << year << " " << month << " " << day << std::endl;
     }
     output_time = add_zero(std::to_string(yyyy), 4) + "-";
     output_time += add_zero(std::to_string(mm), 2) + "-";
     output_time += add_zero(std::to_string(dd), 2);
-    return flag;
+    return err;
 }
 
 // 输入时间
-void input_time(std::string &from_time, std::string &to_time)
+int input_time(std::string &from_time, std::string &to_time)
 {
     unsigned year, month, day;
     std::cout << "～(￣▽￣～) 依次输入*起始*年月日, 可以每输一个数按一次Enter,\n"
               << "也可以像这样一口气输入哦 2000 09 13: " << std::endl;
     std::cin >> year >> month >> day;
-    time_str(year, month, day, from_time);
+    int err = time_str(year, month, day, from_time);
     clean_cin();
     std::cout << "(～￣▽￣)～ 依次输入*结束*年月日, 老规矩: " << std::endl;
     std::cin >> year >> month >> day;
     clean_cin();
-    time_str(year, month, day, to_time);
+    err = time_str(year, month, day, to_time) || err;
+    return err;
 }
 
+// 命令行参数解析
 int option_parse(int argc, char const *argv[], std::string &user_id, std::string &save_path, std::string &from_time, std::string &to_time)
 {
     std::vector<std::string> option(argv, argv + argc);
@@ -323,14 +345,42 @@ int option_parse(int argc, char const *argv[], std::string &user_id, std::string
         }
         else
         {
-            std::cerr << "\n错误参数: " << opt << std::endl;
+            std::cerr << "\n未知选项: " << opt << std::endl;
             return 1;
         }
     }
-    if (user_id.empty() || save_path.empty() || check_user_id(user_id))
+    if (user_id.empty() || save_path.empty() || check_str_id(user_id))
     {
         std::cerr << "\n-u或-s参数错误" << std::endl;
         return 1;
     }
     return 0;
+}
+
+// 交互输入参数
+int option_input(std::string &user_id, std::string &save_path, std::string &from_time, std::string &to_time)
+{
+    int err = 0;
+    std::cout << "\n(*^▽^*) 你要看哪个Up的相册呢? 输入Ta的用户ID:" << std::endl;
+    std::cin >> user_id;
+    clean_cin();
+    if (check_user_id(user_id))
+    {
+        err = 1;
+    }
+    else
+    {
+        std::cout << "(o°ω°o) 翻翻黑历史? 是否设置时间段? y/[n]" << std::endl;
+        char c;
+        c = std::cin.get();
+        clean_cin();
+        if (c == 'y' || c == 'Y')
+        {
+            input_time(from_time, to_time);
+        }
+        std::cout << "(^o^)/ 最后一步啦! 输入保存路径: " << std::endl;
+        std::cin >> save_path;
+        clean_cin();
+    }
+    return err;
 }

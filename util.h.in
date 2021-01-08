@@ -1,6 +1,7 @@
 ﻿#ifndef YUKI_UTIL
 #define YUKI_UTIL
 #include <iostream>
+#include <string>
 #include <ctime>
 
 #cmakedefine LINUX_OK_H
@@ -9,10 +10,10 @@
 #ifdef WIN_OK_H
 #include <wchar.h>
 #include <windows.h>
-int set_color_cmd(DWORD &, bool);
+int set_color_cmd(DWORD &, const bool);
 #endif
 void clean_cin();
-std::string add_zero(const std::string &, std::string::size_type);
+std::string add_zero(const std::string &, const std::string::size_type);
 int check_dir(const std::string &);
 int make_direct(const std::string &);
 std::string remove_chars(const std::string &);
@@ -28,13 +29,14 @@ std::string join_path(Ts &&... paths)
     return join_path({paths...});
 }
 std::string basename(const std::string &);
-int check_save_path(std::string &);
+int check_save_path(const std::string &);
 int check_str_id(const std::string &);
 int check_user_id(const std::string &);
-void input_time(std::string &, std::string &);
+void now_time(unsigned &, unsigned &, unsigned &);
+int input_time(std::string &, std::string &);
 int format_time(unsigned &, unsigned &, unsigned &);
 int string_to_time(const std::string &, std::string &);
-int time_str(unsigned, unsigned, unsigned, std::string &);
+int time_str(const unsigned, const unsigned, const unsigned, std::string &);
 int option_parse(int, char const *[], std::string &, std::string &, std::string &, std::string &);
-
+int option_input(std::string &, std::string &, std::string &, std::string &);
 #endif

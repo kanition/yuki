@@ -64,7 +64,7 @@ curl_slist *base_chunk(const std::string &origin, const std::string &referer)
 }
 
 //保存到内存，即把返回数据存入变量，一次响应很可能被多次调用
-static size_t write_memory_callback(void *contents, size_t size, size_t nmemb, MemoryStruct *mem)
+static size_t write_memory_callback(void *contents, const size_t size, const size_t nmemb, MemoryStruct *mem)
 {
     size_t realsize = size * nmemb; //当前处理数据量
     //申请已有数据+当前数据+尾0内存
@@ -111,7 +111,7 @@ int get_all_count(const char *s)
     std::cout << "\ncall get_all_count: s=\n"
               << s << std::endl;
 #endif
-    nlohmann::json j = nlohmann::json::parse(s);
+    const nlohmann::json j = nlohmann::json::parse(s);
     int code = j["code"].get<int>();
     if (!code)
     {
@@ -127,7 +127,7 @@ std::string get_name(const char *s)
     std::cout << "\ncall get_name: s=\n"
               << s << std::endl;
 #endif
-    nlohmann::json j = nlohmann::json::parse(s);
+    const nlohmann::json j = nlohmann::json::parse(s);
     int code = j["code"].get<int>();
     std::string name;
     if (!code)
@@ -153,7 +153,7 @@ img_group get_img_group(const char *s, const std::string &one_doc_id)
         j = j["data"]["item"];
         g.description = j["description"].get<std::string>(); //说明
         g.upload_time = j["upload_time"].get<std::string>(); //上传时间YYYY-MM-DD HH:mm:ss
-        for (nlohmann::json &item : j["pictures"])
+        for (const nlohmann::json &item : j["pictures"])
         { //图片链接地址
             g.imgs.push_back(item["img_src"].get<std::string>());
         }
@@ -168,12 +168,12 @@ std::vector<std::string> doc_list(const char *s)
     std::cout << "\ncall doc_list: s=\n"
               << s << std::endl;
 #endif
-    nlohmann::json j = nlohmann::json::parse(s);
+    const nlohmann::json j = nlohmann::json::parse(s);
     std::vector<std::string> doc_list;
     int code = j["code"].get<int>();
     if (!code)
     {
-        for (nlohmann::json &item : j["data"]["items"])
+        for (const nlohmann::json &item : j["data"]["items"])
         { //动态编号数字很大，使用长数据位防止溢出
             doc_list.push_back(std::to_string(item["doc_id"].get<unsigned long long>()));
         }
