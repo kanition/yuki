@@ -230,7 +230,7 @@ int format_time(unsigned &year, unsigned &month, unsigned &day)
         day = d;
         return 1;
     }
-    err = range_min_max(year, 1900, 2099) || err;
+    err = range_min_max(year, 2009, 2099) || err;
     err = range_min_max(month, 1, 12) || err;
     err = range_min_max(day, 1, 31) || err;
     if ((year * 10000 + month * 100 + day) > (y * 10000 + m * 100 + d))

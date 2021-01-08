@@ -27,7 +27,7 @@ int yuki(int argc, char const *argv[])
         if (!from_time.empty() && !to_time.empty() && bl.set_time(from_time, to_time, argc <= 1)) //设置时间
         {
             err = 1;
-            std::cerr << "-t参数错误: " << std::endl;
+            std::cerr << "-t参数错误" << std::endl;
         }
         if (!err)
         {
