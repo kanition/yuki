@@ -85,5 +85,9 @@ int main(int argc, char const *argv[])
         set_color_cmd(dwOriginalOutMode, true);
     }
 #endif
+    if (err == 2)
+    {
+        err = 0; //帮助返回err=2是正常功能, 主程序返回0
+    }
     return err;
 }
