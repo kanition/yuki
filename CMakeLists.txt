@@ -9,9 +9,10 @@
 #    env PKG_CONFIG_PATH=/path/to/OpenSSL/lib/pkgconfig ./configure --with-ssl --prefix=/path/to/curl/
 # 3. 在build文件夹下使用
 #    cmake .. # 默认为Debug版
-#或者cmake .. -DCMAKE_BUILD_TYPE=Release # Release版
-#可选cmake .. -DCURL_PATH=/path/to/curl # 指定Curl的安装位置
-#然后cmake --build . # 构建
+# 或者cmake .. -DCMAKE_BUILD_TYPE=Release # Release版
+# 可选cmake .. -DCURL_PATH=/path/to/curl # 指定Curl的安装位置
+# 然后cmake --build . # 构建
+# 打包cpack
 
 # Windows下的说明
 # Windows下支持SSL的curl安装很麻烦，借助vcpkg管理安装则简单得多
@@ -25,6 +26,8 @@
 # 或者Release版
 #    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=path\to\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static
 #    cmake --build . --config Release # Release版
+# 4. Windows下打包需要安装NSIS, 详见https://nsis.sourceforge.io/
+# 打包cpack -C Release
 
 cmake_minimum_required(VERSION 3.10)
 project(yuki VERSION 1.0)
