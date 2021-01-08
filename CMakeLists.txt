@@ -15,11 +15,11 @@
 # 打包cpack
 
 # Windows下的说明
-# Windows下支持SSL的curl安装很麻烦，借助vcpkg管理安装则简单得多
+# Windows下支持SSL的curl安装很麻烦，借助vcpkg管理安装则简单得多 # 其实上面的Linux也可以完全适用该方法
 # 1. 先安装vcpkg本身，路径不要包含中文和空格，详见https://github.com/Microsoft/vcpkg/#quick-start-windows
 # 2. 然后安装curl静态库(-static)而非动态库，否则最终生成的是动态链接版的多个dll和exe集合:
 #    见https://github.com/curl/curl/blob/master/docs/INSTALL.md#building-using-vcpkg
-#    安装命令vcpkg install curl[tool]:x86-windows-static
+#    安装命令vcpkg install curl[tool]:x86-windows-static # 也可以使用x64-windows-static只要保持一致即可
 # 3. 在文件夹build下使用命令构建Debug版
 #    cmake .. -DCMAKE_TOOLCHAIN_FILE=path\to\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static
 #    cmake --build . # 默认为debug版
