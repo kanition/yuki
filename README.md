@@ -97,9 +97,9 @@ $ ./yuki [args...] # 带参数，把 yuki 替换为你下载的版本，如 yuki
 - 时间设置 `-t <开始时间> <结束时间>`：可选参数，指定搜索时间段，只有在该时段内上传的图片会被下载；未指定时默认下载截止到运行当天上传的全部图片；时间格式为年月日组成的形如 `YYYYMMDD` 的8位数字（例如2021年1月23日为 `20210123`）；开始时间和结束时间必须同时指定。
 
 参数模式示例
-- Windows 下，UID 为 `8047632` 的用户备份全部图片到 `C:/Users/yuki/Pictures`
+- Windows 下，UID 为 `8047632` 的用户备份全部图片到 `C:\Users\yuki\Pictures`
   ```bash
-  $ ./yuki-0.1.0_Windows_32bit.exe -u 8047632 -s C:/Users/yuki/Pictures
+  $ .\yuki-0.1.0_Windows_32bit.exe -u 8047632 -s C:\Users\yuki\Pictures
   ```
 - Linux 下，UID为 `8047632` 的用户备份从2021年1月3日至2021年1月5日上传的图片到 `/home/yuki/Pictures`
   ```bash

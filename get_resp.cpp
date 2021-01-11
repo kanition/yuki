@@ -4,6 +4,30 @@
 #include "yuki.h"
 #ifdef WIN_OK_H
 #include <errno.h>
+#include <windows.h>
+
+// 转码
+std::string utf8_gbk(const char *src_str)
+{
+    int len = MultiByteToWideChar(CP_UTF8, 0, src_str, -1, nullptr, 0);
+    wchar_t *wszGBK = new wchar_t[len + 1];
+    std::memset(wszGBK, 0, len * 2 + 2);
+    MultiByteToWideChar(CP_UTF8, 0, src_str, -1, wszGBK, len);
+    len = WideCharToMultiByte(CP_ACP, 0, wszGBK, -1, nullptr, 0, nullptr, nullptr);
+    char *szGBK = new char[len + 1];
+    std::memset(szGBK, 0, len + 1);
+    WideCharToMultiByte(CP_ACP, 0, wszGBK, -1, szGBK, len, nullptr, nullptr);
+    std::string strTemp(szGBK);
+    if (wszGBK)
+    {
+        delete[] wszGBK;
+    }
+    if (szGBK)
+    {
+        delete[] szGBK;
+    }
+    return strTemp;
+}
 #endif
 
 // 下载图片
@@ -109,7 +133,11 @@ int get_all_count(const char *s)
 {
 #ifdef DEBUG
     std::cout << "\ncall get_all_count: s=\n"
+#ifdef WIN_OK_H
+              << utf8_gbk(s) << std::endl;
+#else
               << s << std::endl;
+#endif
 #endif
     const nlohmann::json j = nlohmann::json::parse(s);
     int code = j["code"].get<int>();
@@ -125,7 +153,11 @@ std::string get_name(const char *s)
 {
 #ifdef DEBUG
     std::cout << "\ncall get_name: s=\n"
+#ifdef WIN_OK_H
+              << utf8_gbk(s) << std::endl;
+#else
               << s << std::endl;
+#endif
 #endif
     const nlohmann::json j = nlohmann::json::parse(s);
     int code = j["code"].get<int>();
@@ -133,6 +165,9 @@ std::string get_name(const char *s)
     if (!code)
     {
         name = j["data"]["name"].get<std::string>();
+#ifdef WIN_OK_H
+        name = utf8_gbk(name.c_str());
+#endif
     }
     return name;
 }
@@ -142,7 +177,11 @@ img_group get_img_group(const char *s, const std::string &one_doc_id)
 {
 #ifdef DEBUG
     std::cout << "\ncall get_img_group: one_doc_id=" << one_doc_id << "\ns=\n"
+#ifdef WIN_OK_H
+              << utf8_gbk(s) << std::endl;
+#else
               << s << std::endl;
+#endif
 #endif
     img_group g;
     g.doc_id = one_doc_id; //动态ID
@@ -166,7 +205,11 @@ std::vector<std::string> doc_list(const char *s)
 {
 #ifdef DEBUG
     std::cout << "\ncall doc_list: s=\n"
+#ifdef WIN_OK_H
+              << utf8_gbk(s) << std::endl;
+#else
               << s << std::endl;
+#endif
 #endif
     const nlohmann::json j = nlohmann::json::parse(s);
     std::vector<std::string> doc_list;
