@@ -58,7 +58,7 @@ void title_print()
 \x1b[38;2;144;50;73m   ╚═╝    \x1b[38;2;100;164;192m ╚═════╝  \x1b[38;2;165;142;152m╚═╝  ╚═╝ \x1b[38;2;100;164;192m╚═╝\x1b[m"
               << std::endl;
 #ifdef YUKI_VERSION_MAJOR
-    std::cout << "版本: " << YUKI_VERSION_MAJOR << "." << YUKI_VERSION_MINOR << "." << YUKI_VERSION_PATCH << std::endl;
+    std::cout << "版本: " << YUKI_VERSION_MAJOR << "." << YUKI_VERSION_MINOR << "." << YUKI_VERSION_PATCH << "\nhttps://github.com/jiangjungit/yuki" << std::endl;
 #endif
 }
 
