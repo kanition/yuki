@@ -233,5 +233,3 @@ LOGO 就是参考她的形象设计的，你有认出来吗？
 [Curl](https://github.com/curl/curl): [COPYRIGHT AND PERMISSION NOTICE](https://github.com/curl/curl/blob/master/COPYING)
 
 [JSON for Modern C++](https://github.com/nlohmann/json): [MIT License](https://github.com/nlohmann/json/blob/develop/LICENSE.MIT)
-
-Copyright (c) 2021-present, jiangjungit
