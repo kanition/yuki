@@ -361,8 +361,9 @@ int option_parse(int argc, char const *argv[], std::string &user_id, std::string
 int option_input(std::string &user_id, std::string &save_path, std::string &from_time, std::string &to_time)
 {
     int err = 0;
-    std::cout << "\n(*^▽^*) 你要看哪个Up的相册呢? 输入Ta的用户ID:" << std::endl;
-    std::cin >> user_id;
+    std::cout << "\n(*^▽^*) 你是哪位小可爱呢? 输入UID吧\n注意：UID不是昵称更不是登录账号，而是一串纯数字，查询方法是\n电脑端查询：点击Up头像打开Ta的主页，浏览器地址栏里形如\n\thttps : //space.bilibili.com/xxxxx中xxxxx的部分就是UID\n手机端查询：我的->设置->账号资料->UID，或者\n\t点击Up头像打开个人主页->上部信息栏->详情->UID:" << std::endl;
+    std::cin >>
+        user_id;
     clean_cin();
     if (check_user_id(user_id))
     {
@@ -370,7 +371,7 @@ int option_input(std::string &user_id, std::string &save_path, std::string &from
     }
     else
     {
-        std::cout << "(o°ω°o) 翻翻黑历史? 是否设置时间段? y/[n]" << std::endl;
+        std::cout << "(o°ω°o) 回顾黑历史? 是否设置时间段? y/[n]" << std::endl;
         char c;
         c = std::cin.get();
         clean_cin();
