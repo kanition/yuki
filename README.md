@@ -189,7 +189,7 @@ LOGO 就是参考她的形象设计的，你有认出来吗？
 
 ## 编译链接说明
 ### 依赖项
-- [curl](https://github.com/curl/curl)
+- [Curl](https://github.com/curl/curl)
 - [JSON for Modern C++](https://github.com/nlohmann/json)（已包含于[json.hpp](./json.hpp)中，无需额外下载安装）
 - [CMake](https://cmake.org)
 
@@ -226,9 +226,11 @@ LOGO 就是参考她的形象设计的，你有认出来吗？
    ```
    如果要尝试 Debug 版，将上述三处 `Release` 换为 `Debug` 即可。
 # 许可协议
-YUKI: [GPL-3.0 License](./LICENSE)
+### 作者: [Kanition](https://github.com/kanition) 和可爱的[贡献者们](https://github.com/kanition/yuki/graphs/contributors)ヾ(❀˘︶˘)ﾉﾞ
 
-[curl](https://github.com/curl/curl): [COPYRIGHT AND PERMISSION NOTICE](https://github.com/curl/curl/blob/master/COPYING)
+### YUKI: [GPL-3.0 License](./LICENSE)
+
+[Curl](https://github.com/curl/curl): [COPYRIGHT AND PERMISSION NOTICE](https://github.com/curl/curl/blob/master/COPYING)
 
 [JSON for Modern C++](https://github.com/nlohmann/json): [MIT License](https://github.com/nlohmann/json/blob/develop/LICENSE.MIT)
 
