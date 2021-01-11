@@ -1,10 +1,10 @@
 <p align="center"><img src="./yuki.svg" alt="YUKI" height="200px"></p>
 <div align="center">
-  <a href="https://github.com/kanition/yuki/actions">
-    <img src="https://github.com/kanition/yuki/workflows/CMake/badge.svg" alt="Build Status">
+  <a href="https://github.com/jiangjungit/yuki/actions">
+    <img src="https://github.com/jiangjungit/yuki/workflows/CMake/badge.svg" alt="Build Status">
   </a>
-  <a href="https://github.com/kanition/yuki/releases">
-    <img src="https://img.shields.io/github/release/kanition/yuki.svg" alt="GitHub release">
+  <a href="https://github.com/jiangjungit/yuki/releases">
+    <img src="https://img.shields.io/github/release/jiangjungit/yuki.svg" alt="GitHub release">
   </a>
 </div>
 
@@ -49,7 +49,7 @@ YUKI，一个可爱的B站相簿本地备份小工具(\*^▽^\*)。
 
 # 使用方法
 ## 下载链接
-根据自己的系统环境，前往[此处](https://github.com/kanition/yuki/releases/latest)下载最新版运行文件。
+根据自己的系统环境，前往[此处](https://github.com/jiangjungit/yuki/releases/latest)下载最新版运行文件。
 > 啥是系统环境？如果你不知道这个，也不是用的苹果电脑，那就去下 Windows 版准没错(〃'▽'〃)
 ## 运行方法
 YUKI 有两种运行方式：[交互模式](#交互模式（小白墙裂推荐）)和[参数模式](#参数模式)。
@@ -160,8 +160,8 @@ YUKI 作为极其小巧的工具，占用资源很少，几乎不可能让电脑
 
 ### 我遇到的问题比较特别，上面都没列出来
 少年你抽卡必中SSR(⊙▽⊙)。
-欢迎前往[此处](https://github.com/kanition/yuki/issues)搜索相关问题（调戏 YUKI），
-没有满意结果时再[提问](https://github.com/kanition/yuki/issues/new)。
+欢迎前往[此处](https://github.com/jiangjungit/yuki/issues)搜索相关问题（调戏 YUKI），
+没有满意结果时再[提问](https://github.com/jiangjungit/yuki/issues/new)。
 
 # 为什么叫YUKI
 你终于问这个问题了，我都准备好久了٩(๑>◡<๑)۶ ！！！
@@ -226,7 +226,7 @@ LOGO 就是参考她的形象设计的，你有认出来吗？
    ```
    如果要尝试 Debug 版，将上述三处 `Release` 换为 `Debug` 即可。
 # 许可协议
-### 作者: [Kanition](https://github.com/kanition) 和可爱的[贡献者们](https://github.com/kanition/yuki/graphs/contributors)ヾ(❀˘︶˘)ﾉﾞ
+### 作者: [jiangjungit](https://github.com/jiangjungit) 和可爱的[贡献者们](https://github.com/jiangjungit/yuki/graphs/contributors)ヾ(❀˘︶˘)ﾉﾞ
 
 ### YUKI: [GPL-3.0 License](./LICENSE)
 
@@ -234,4 +234,4 @@ LOGO 就是参考她的形象设计的，你有认出来吗？
 
 [JSON for Modern C++](https://github.com/nlohmann/json): [MIT License](https://github.com/nlohmann/json/blob/develop/LICENSE.MIT)
 
-Copyright (c) 2021-present, kanition
+Copyright (c) 2021-present, jiangjungit
